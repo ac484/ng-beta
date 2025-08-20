@@ -1,0 +1,31 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // 使用者只能存取自己的檔案
+    match /documents/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // 公開檔案（如頭像、公司標誌等）
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // 暫存檔案（用於上傳處理）
+    match /temp/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // 自動刪除超過24小時的暫存檔案
+      allow delete: if request.auth != null && 
+                       request.auth.uid == userId &&
+                       resource.timeCreated < timestamp.date(2023, 1, 1);
+    }
+    
+    // 系統檔案（僅管理員可存取）
+    match /system/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if false; // 僅透過 Admin SDK 管理
+    }
+  }
+}

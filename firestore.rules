@@ -1,0 +1,141 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 使用者只能存取自己建立的資料
+    function isOwner(resource) {
+      return request.auth != null && request.auth.uid == resource.data.createdBy;
+    }
+    
+    // 檢查使用者是否已認證
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // 檢查是否為有效的建立操作
+    function isValidCreate() {
+      return request.auth != null && 
+             request.resource.data.createdBy == request.auth.uid &&
+             request.resource.data.updatedBy == request.auth.uid &&
+             request.resource.data.createdAt == request.time &&
+             request.resource.data.updatedAt == request.time;
+    }
+    
+    // 檢查是否為有效的更新操作
+    function isValidUpdate() {
+      return request.auth != null && 
+             resource.data.createdBy == request.auth.uid &&
+             request.resource.data.updatedBy == request.auth.uid &&
+             request.resource.data.updatedAt == request.time &&
+             request.resource.data.createdBy == resource.data.createdBy &&
+             request.resource.data.createdAt == resource.data.createdAt;
+    }
+
+    // 專案集合規則
+    match /projects/{projectId} {
+      allow read, write: if isAuthenticated() && isOwner(resource);
+      allow create: if isValidCreate();
+      allow update: if isValidUpdate();
+      allow delete: if isAuthenticated() && isOwner(resource);
+    }
+
+    // 任務集合規則
+    match /tasks/{taskId} {
+      allow read, write: if isAuthenticated() && isOwner(resource);
+      allow create: if isValidCreate();
+      allow update: if isValidUpdate();
+      allow delete: if isAuthenticated() && isOwner(resource);
+    }
+
+    // 子任務集合規則
+    match /subtasks/{subtaskId} {
+      allow read, write: if isAuthenticated() && isOwner(resource);
+      allow create: if isValidCreate();
+      allow update: if isValidUpdate();
+      allow delete: if isAuthenticated() && isOwner(resource);
+    }
+
+    // 合約集合規則
+    match /contracts/{contractId} {
+      allow read, write: if isAuthenticated() && isOwner(resource);
+      allow create: if isValidCreate();
+      allow update: if isValidUpdate();
+      allow delete: if isAuthenticated() && isOwner(resource);
+    }
+
+    // 合約里程碑集合規則
+    match /contract_milestones/{milestoneId} {
+      allow read, write: if isAuthenticated() && isOwner(resource);
+      allow create: if isValidCreate();
+      allow update: if isValidUpdate();
+      allow delete: if isAuthenticated() && isOwner(resource);
+    }
+
+    // 夥伴集合規則
+    match /partners/{partnerId} {
+      allow read, write: if isAuthenticated() && isOwner(resource);
+      allow create: if isValidCreate();
+      allow update: if isValidUpdate();
+      allow delete: if isAuthenticated() && isOwner(resource);
+    }
+
+    // 協作集合規則
+    match /collaborations/{collaborationId} {
+      allow read, write: if isAuthenticated() && isOwner(resource);
+      allow create: if isValidCreate();
+      allow update: if isValidUpdate();
+      allow delete: if isAuthenticated() && isOwner(resource);
+    }
+
+    // 關係集合規則
+    match /relationships/{relationshipId} {
+      allow read, write: if isAuthenticated() && isOwner(resource);
+      allow create: if isValidCreate();
+      allow update: if isValidUpdate();
+      allow delete: if isAuthenticated() && isOwner(resource);
+    }
+
+    // 文件集合規則
+    match /documents/{documentId} {
+      allow read: if isAuthenticated() && (isOwner(resource) || resource.data.isPublic == true);
+      allow write: if isAuthenticated() && isOwner(resource);
+      allow create: if isValidCreate();
+      allow update: if isValidUpdate();
+      allow delete: if isAuthenticated() && isOwner(resource);
+    }
+
+    // 文件版本集合規則
+    match /document_versions/{versionId} {
+      allow read, write: if isAuthenticated() && isOwner(resource);
+      allow create: if isValidCreate();
+      allow update: if isValidUpdate();
+      allow delete: if isAuthenticated() && isOwner(resource);
+    }
+
+    // 文件分享集合規則
+    match /document_shares/{shareId} {
+      allow read: if isAuthenticated() && 
+                     (isOwner(resource) || 
+                      request.auth.uid == resource.data.sharedWith ||
+                      request.auth.token.email == resource.data.sharedWith);
+      allow write: if isAuthenticated() && isOwner(resource);
+      allow create: if isValidCreate();
+      allow update: if isValidUpdate();
+      allow delete: if isAuthenticated() && isOwner(resource);
+    }
+
+    // 使用者設定檔集合規則
+    match /user_profiles/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+      allow create: if isAuthenticated() && 
+                       request.auth.uid == userId &&
+                       request.resource.data.createdBy == request.auth.uid;
+    }
+
+    // 系統設定集合規則（僅管理員可存取）
+    match /system_settings/{settingId} {
+      allow read: if isAuthenticated();
+      allow write: if false; // 僅透過 Admin SDK 管理
+    }
+  }
+}

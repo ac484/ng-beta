@@ -1,43 +1,68 @@
-import { FirebaseService } from './firebase-service'
+import { FirebaseService } from './firebase-service';
+import { Partner, CreatePartnerData } from '@/types/partner.types';
 
-export class PartnerService {
-  private firebase: FirebaseService
+export class PartnerService extends FirebaseService {
+  private collectionName = 'partners';
 
-  constructor() {
-    this.firebase = new FirebaseService()
+  async createPartner(data: CreatePartnerData): Promise<Partner> {
+    return this.create<Partner>(this.collectionName, data);
   }
 
-  async getPartners() {
-    return this.firebase.getCollection('partners')
+  async getPartner(id: string, userId: string): Promise<Partner | null> {
+    const partner = await this.read<Partner>(this.collectionName, id);
+
+    // 檢查權限
+    if (partner && partner.createdBy !== userId) {
+      throw new Error('Unauthorized');
+    }
+
+    return partner;
   }
 
-  async getPartner(id: string) {
-    return this.firebase.getDocument('partners', id)
+  async getPartners(userId: string): Promise<Partner[]> {
+    return this.list<Partner>(this.collectionName, {
+      where: [{ field: 'createdBy', operator: '==', value: userId }],
+      orderBy: [['updatedAt', 'desc']]
+    });
   }
 
-  async createPartner(data: any) {
-    return this.firebase.addDocument('partners', data)
+  async getPartnersByProject(
+    projectId: string,
+    userId: string
+  ): Promise<Partner[]> {
+    return this.list<Partner>(this.collectionName, {
+      where: [
+        { field: 'projectIds', operator: 'array-contains', value: projectId },
+        { field: 'createdBy', operator: '==', value: userId }
+      ],
+      orderBy: [['updatedAt', 'desc']]
+    });
   }
 
-  async updatePartner(id: string, data: any) {
-    return this.firebase.updateDocument('partners', id, data)
+  async updatePartner(
+    id: string,
+    data: Partial<Partner>,
+    userId: string
+  ): Promise<Partner> {
+    // 先檢查權限
+    const existingPartner = await this.getPartner(id, userId);
+    if (!existingPartner) {
+      throw new Error('Partner not found or unauthorized');
+    }
+
+    await this.update(this.collectionName, id, data);
+    return { ...existingPartner, ...data } as Partner;
   }
 
-  async deletePartner(id: string) {
-    return this.firebase.deleteDocument('partners', id)
-  }
+  async deletePartner(id: string, userId: string): Promise<void> {
+    // 先檢查權限
+    const existingPartner = await this.getPartner(id, userId);
+    if (!existingPartner) {
+      throw new Error('Partner not found or unauthorized');
+    }
 
-  async getPartnersByCategory(category: string) {
-    return this.firebase.queryCollection('partners', [
-      { field: 'category', operator: '==', value: category }
-    ], 'name')
-  }
-
-  async searchPartners(searchTerm: string) {
-    // 注意：Firestore 不支援全文搜索，這裡是簡單的前綴匹配
-    return this.firebase.queryCollection('partners', [
-      { field: 'name', operator: '>=', value: searchTerm },
-      { field: 'name', operator: '<=', value: searchTerm + '\uf8ff' }
-    ], 'name')
+    await this.delete(this.collectionName, id);
   }
 }
+
+export const partnerService = new PartnerService();

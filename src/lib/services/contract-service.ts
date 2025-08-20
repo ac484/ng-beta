@@ -1,51 +1,68 @@
-import { SupabaseService } from './supabase-service'
+import { FirebaseService } from './firebase-service';
+import { Contract, CreateContractData } from '@/types/contracts.types';
 
-export class ContractService {
-  private supabase: SupabaseService
+export class ContractService extends FirebaseService {
+  private collectionName = 'contracts';
 
-  constructor() {
-    this.supabase = new SupabaseService()
+  async createContract(data: CreateContractData): Promise<Contract> {
+    return this.create<Contract>(this.collectionName, data);
   }
 
-  async getContracts() {
-    return this.supabase.getContracts()
+  async getContract(id: string, userId: string): Promise<Contract | null> {
+    const contract = await this.read<Contract>(this.collectionName, id);
+
+    // 檢查權限
+    if (contract && contract.createdBy !== userId) {
+      throw new Error('Unauthorized');
+    }
+
+    return contract;
   }
 
-  async getContract(id: string) {
-    const supabase = await this.supabase.getClient()
-    const { data, error } = await supabase
-      .from('contracts')
-      .select('*')
-      .eq('id', id)
-      .single()
-    return { data, error }
+  async getContracts(userId: string): Promise<Contract[]> {
+    return this.list<Contract>(this.collectionName, {
+      where: [{ field: 'createdBy', operator: '==', value: userId }],
+      orderBy: [['updatedAt', 'desc']]
+    });
   }
 
-  async createContract(data: any) {
-    const supabase = await this.supabase.getClient()
-    const { data: row, error } = await supabase.from('contracts').insert(data).select('*').single()
-    return { data: row, error }
+  async getContractsByProject(
+    projectId: string,
+    userId: string
+  ): Promise<Contract[]> {
+    return this.list<Contract>(this.collectionName, {
+      where: [
+        { field: 'projectId', operator: '==', value: projectId },
+        { field: 'createdBy', operator: '==', value: userId }
+      ],
+      orderBy: [['updatedAt', 'desc']]
+    });
   }
 
-  async updateContract(id: string, data: any) {
-    const supabase = await this.supabase.getClient()
-    const { data: row, error } = await supabase.from('contracts').update(data).eq('id', id).select('*').single()
-    return { data: row, error }
+  async updateContract(
+    id: string,
+    data: Partial<Contract>,
+    userId: string
+  ): Promise<Contract> {
+    // 先檢查權限
+    const existingContract = await this.getContract(id, userId);
+    if (!existingContract) {
+      throw new Error('Contract not found or unauthorized');
+    }
+
+    await this.update(this.collectionName, id, data);
+    return { ...existingContract, ...data } as Contract;
   }
 
-  async deleteContract(id: string) {
-    const supabase = await this.supabase.getClient()
-    const { error } = await supabase.from('contracts').delete().eq('id', id)
-    return { error }
-  }
+  async deleteContract(id: string, userId: string): Promise<void> {
+    // 先檢查權限
+    const existingContract = await this.getContract(id, userId);
+    if (!existingContract) {
+      throw new Error('Contract not found or unauthorized');
+    }
 
-  async getContractsByStatus(status: string) {
-    const supabase = await (this.supabase as any)['clientPromise']
-    const { data, error } = await supabase
-      .from('contracts')
-      .select('*')
-      .eq('status', status)
-      .order('createdAt', { ascending: true })
-    return { data, error }
+    await this.delete(this.collectionName, id);
   }
 }
+
+export const contractService = new ContractService();

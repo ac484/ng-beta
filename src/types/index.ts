@@ -6,11 +6,11 @@
  * @created 2025-01-17
  * @updated 2025-01-17
  * @version 1.0.0
- * 
+ *
  * @fileoverview 全域導航和 UI 類型定義
  * @description 定義應用程式中導航元件、選單項目和頁腳的核心類型介面，
  * 支援多層級導航結構、圖示整合、快捷鍵和外部連結功能。
- * 
+ *
  * @tech-stack
  * - Runtime: Node.js 20+
  * - Framework: Next.js 15 (App Router)
@@ -21,12 +21,12 @@
  * - State: Zustand + React Context
  * - Validation: Zod
  * - Testing: Jest + React Testing Library
- * 
+ *
  * @environment
  * - Node: >=20.0.0
  * - Package Manager: pnpm
  * - Build Tool: Turbopack
- * 
+ *
  * @exports
  * - NavItem: 基礎導航項目介面
  * - NavItemWithChildren: 必須包含子項目的導航項目
@@ -112,3 +112,11 @@ export type MainNavItem = NavItemWithOptionalChildren;
  * @description 側邊欄導航使用的項目類型，必須包含子項目以支援分組顯示
  */
 export type SidebarNavItem = NavItemWithChildren;
+
+// 匯出其他模組類型
+export * from './auth.types';
+export * from './data-table';
+export * from './projects.types';
+export * from './contracts.types';
+export * from './partner.types';
+export * from './document.types';

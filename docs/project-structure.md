@@ -1,6 +1,6 @@
 # Project Structure
 
-> **Auto-generated on:** 2025-08-20T15:13:53.799Z  
+> **Auto-generated on:** 2025-08-20T15:23:03.682Z  
 > **Purpose:** AI code generation reference - shows relevant project structure for development
 
 ## Directory Tree
@@ -60,12 +60,6 @@
 │   │   └── page.tsx
 │   ├── components/
 │   │   ├── analytics/
-│   │   ├── auth/
-│   │   │   ├── components/
-│   │   │   ├── auth-guard.tsx
-│   │   │   ├── permission-demo.tsx
-│   │   │   ├── permission-guard.tsx
-│   │   │   └── user-profile.tsx
 │   │   ├── contracts/
 │   │   ├── documents/
 │   │   ├── kbar/

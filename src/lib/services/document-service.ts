@@ -1,55 +1,105 @@
-import { FirebaseService } from './firebase-service'
+import { FirebaseService } from './firebase-service';
+import { Document, CreateDocumentData } from '@/types/document.types';
 
-export class DocumentService {
-  private firebase: FirebaseService
+export class DocumentService extends FirebaseService {
+  private collectionName = 'documents';
 
-  constructor() {
-    this.firebase = new FirebaseService()
+  async createDocument(data: CreateDocumentData): Promise<Document> {
+    return this.create<Document>(this.collectionName, data);
   }
 
-  async getDocuments() {
-    return this.firebase.getCollection('documents')
-  }
+  async getDocument(id: string, userId: string): Promise<Document | null> {
+    const document = await this.read<Document>(this.collectionName, id);
 
-  async getDocument(id: string) {
-    return this.firebase.getDocument('documents', id)
-  }
-
-  async createDocument(data: any) {
-    return this.firebase.addDocument('documents', data)
-  }
-
-  async updateDocument(id: string, data: any) {
-    return this.firebase.updateDocument('documents', id, data)
-  }
-
-  async deleteDocument(id: string) {
-    return this.firebase.deleteDocument('documents', id)
-  }
-
-  async uploadDocument(file: File, metadata: any) {
-    const path = `documents/${Date.now()}_${file.name}`
-    const uploadResult = await this.firebase.uploadFile(path, file)
-    
-    if (uploadResult.url) {
-      const documentData = {
-        ...metadata,
-        fileName: file.name,
-        fileSize: file.size,
-        fileType: file.type,
-        downloadURL: uploadResult.url,
-        uploadedAt: new Date().toISOString()
-      }
-      
-      return this.createDocument(documentData)
+    // 檢查權限
+    if (document && document.createdBy !== userId) {
+      throw new Error('Unauthorized');
     }
-    
-    return { id: null, error: uploadResult.error }
+
+    return document;
   }
 
-  async getDocumentsByType(type: string) {
-    return this.firebase.queryCollection('documents', [
-      { field: 'type', operator: '==', value: type }
-    ], 'uploadedAt')
+  async getDocuments(userId: string): Promise<Document[]> {
+    return this.list<Document>(this.collectionName, {
+      where: [{ field: 'createdBy', operator: '==', value: userId }],
+      orderBy: [['updatedAt', 'desc']]
+    });
+  }
+
+  async getDocumentsByProject(
+    projectId: string,
+    userId: string
+  ): Promise<Document[]> {
+    return this.list<Document>(this.collectionName, {
+      where: [
+        { field: 'projectId', operator: '==', value: projectId },
+        { field: 'createdBy', operator: '==', value: userId }
+      ],
+      orderBy: [['updatedAt', 'desc']]
+    });
+  }
+
+  async uploadAndCreateDocument(
+    file: File,
+    metadata: Omit<
+      CreateDocumentData,
+      'filename' | 'originalName' | 'mimeType' | 'size' | 'url'
+    >,
+    userId: string
+  ): Promise<Document> {
+    // 上傳檔案到 Firebase Storage
+    const filePath = `documents/${userId}/${Date.now()}-${file.name}`;
+    const downloadURL = await this.uploadFile(filePath, file);
+
+    // 建立文件記錄
+    const documentData: CreateDocumentData = {
+      ...metadata,
+      filename: filePath,
+      originalName: file.name,
+      mimeType: file.type,
+      size: file.size,
+      url: downloadURL,
+      createdBy: userId,
+      updatedBy: userId
+    };
+
+    return this.createDocument(documentData);
+  }
+
+  async updateDocument(
+    id: string,
+    data: Partial<Document>,
+    userId: string
+  ): Promise<Document> {
+    // 先檢查權限
+    const existingDocument = await this.getDocument(id, userId);
+    if (!existingDocument) {
+      throw new Error('Document not found or unauthorized');
+    }
+
+    await this.update(this.collectionName, id, data);
+    return { ...existingDocument, ...data } as Document;
+  }
+
+  async deleteDocument(id: string, userId: string): Promise<void> {
+    // 先檢查權限
+    const existingDocument = await this.getDocument(id, userId);
+    if (!existingDocument) {
+      throw new Error('Document not found or unauthorized');
+    }
+
+    // 刪除 Storage 中的檔案
+    if (existingDocument.filename) {
+      try {
+        await this.deleteFile(existingDocument.filename);
+      } catch (error) {
+        console.warn('Failed to delete file from storage:', error);
+      }
+    }
+
+    // 刪除文件記錄
+    await this.delete(this.collectionName, id);
   }
 }
+
+export const documentService = new DocumentService();
