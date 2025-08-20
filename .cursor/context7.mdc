@@ -1,0 +1,31 @@
+---
+alwaysApply: true
+---
+
+[[calls]]
+match = "7"
+tool = "context7"
+exact = true
+
+[[calls]]
+match = "c7"  
+tool = "context7"
+exact = true
+
+[[calls]]
+match = "when discussing code libraries or asking for documentation"
+tool = "context7"
+
+[[calls]]
+match = "when the user types just '7' or 'c7'"
+tool = "context7"
+autoTrigger = true
+
+[[calls]]
+match = "when the user mentions specific libraries like 'react', 'vue', 'angular', 'express', etc."
+tool = "context7"
+autoTrigger = true
+
+[[calls]]
+match = "when the user asks 'how to use', 'documentation for', or 'docs for'"
+tool = "context7"

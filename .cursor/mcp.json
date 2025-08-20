@@ -1,0 +1,79 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem",
+      "D:\\7s\\ac-beta\\.cursor",
+      "D:\\7s\\ac-beta\\.vscode",
+      "D:\\7s\\ac-beta\\custom_modes",
+      "D:\\7s\\ac-beta\\docs",
+      "D:\\7s\\ac-beta\\public",
+      "D:\\7s\\ac-beta\\src",
+      "D:\\7s\\ac-beta\\memory-bank"
+    ],
+      "disabled": false,
+      "autoApprove": [
+        "list_allowed_directories",
+        "list_directory",
+        "directory_tree",
+        "create_directory",
+        "write_file",
+        "read_file",
+        "edit_file",
+        "delete_file",
+        "move_file",
+        "copy_file",
+        "search_files"
+      ]
+    },
+      "fetch": {
+      "command": "uvx",
+      "args": [
+        "mcp-server-fetch"
+      ],
+      "env": {}
+      },
+      "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ],
+      "env": {
+        "NODE_OPTIONS": "--max-old-space-size=2048"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "resolve-library-id",
+        "get-library-docs"
+      ]
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ],
+      "env": {
+        "NODE_OPTIONS": "--max-old-space-size=1024"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "sequentialthinking"
+      ]
+    },
+    "memory": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "env": {
+        "MEMORY_FILE_PATH": "./memory-bank/memory.json",
+        "NODE_OPTIONS": "--max-old-space-size=2048"
+      },
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
