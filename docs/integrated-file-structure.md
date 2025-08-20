@@ -482,8 +482,14 @@ src/
 │   │   ├── config.ts
 │   │   ├── collections.ts
 │   │   └── migrations.ts
+│   ├── supabase/                 # Supabase 配置
+│   │   ├── client.ts             # Supabase 客戶端配置
+│   │   ├── server.ts             # 服務端 Supabase 配置
+│   │   ├── auth.ts               # 認證相關配置
+│   │   └── types.ts              # Supabase 生成的類型定義
 │   ├── services/
 │   │   ├── firebase-service.ts
+│   │   ├── supabase-service.ts   # Supabase 統一服務
 │   │   ├── project-service.ts
 │   │   ├── partner-service.ts
 │   │   ├── document-service.ts
