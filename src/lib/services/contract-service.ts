@@ -1,35 +1,51 @@
-import { FirebaseService } from './firebase-service'
+import { SupabaseService } from './supabase-service'
 
 export class ContractService {
-  private firebase: FirebaseService
+  private supabase: SupabaseService
 
   constructor() {
-    this.firebase = new FirebaseService()
+    this.supabase = new SupabaseService()
   }
 
   async getContracts() {
-    return this.firebase.getCollection('contracts')
+    return this.supabase.getContracts()
   }
 
   async getContract(id: string) {
-    return this.firebase.getDocument('contracts', id)
+    const supabase = await this.supabase.getClient()
+    const { data, error } = await supabase
+      .from('contracts')
+      .select('*')
+      .eq('id', id)
+      .single()
+    return { data, error }
   }
 
   async createContract(data: any) {
-    return this.firebase.addDocument('contracts', data)
+    const supabase = await this.supabase.getClient()
+    const { data: row, error } = await supabase.from('contracts').insert(data).select('*').single()
+    return { data: row, error }
   }
 
   async updateContract(id: string, data: any) {
-    return this.firebase.updateDocument('contracts', id, data)
+    const supabase = await this.supabase.getClient()
+    const { data: row, error } = await supabase.from('contracts').update(data).eq('id', id).select('*').single()
+    return { data: row, error }
   }
 
   async deleteContract(id: string) {
-    return this.firebase.deleteDocument('contracts', id)
+    const supabase = await this.supabase.getClient()
+    const { error } = await supabase.from('contracts').delete().eq('id', id)
+    return { error }
   }
 
   async getContractsByStatus(status: string) {
-    return this.firebase.queryCollection('contracts', [
-      { field: 'status', operator: '==', value: status }
-    ], 'createdAt')
+    const supabase = await (this.supabase as any)['clientPromise']
+    const { data, error } = await supabase
+      .from('contracts')
+      .select('*')
+      .eq('status', status)
+      .order('createdAt', { ascending: true })
+    return { data, error }
   }
 }

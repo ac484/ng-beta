@@ -35,8 +35,8 @@ export const getAppCheckToken = async (forceRefresh: boolean = false): Promise<s
       return null
     }
 
-    const token = await getToken(appCheckInstance, forceRefresh)
-    return token
+    const tokenResult = await getToken(appCheckInstance, forceRefresh)
+    return tokenResult.token
   } catch (error) {
     console.error('Error getting App Check token:', error)
     return null
