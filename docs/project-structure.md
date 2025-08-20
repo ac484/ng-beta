@@ -1,6 +1,6 @@
 # Project Structure
 
-> **Auto-generated on:** 2025-08-20T10:00:18.302Z  
+> **Auto-generated on:** 2025-08-20T10:01:37.675Z  
 > **Purpose:** AI code generation reference - shows relevant project structure for development
 
 ## Directory Tree
@@ -121,11 +121,14 @@
 │   │   ├── 10-index.json
 │   │   └── README.md
 │   ├── architecture-update-summary.md
+│   ├── auto-structure-generation.md
 │   ├── bank.md
+│   ├── commit-structure-solution.md
 │   ├── integrated-file-structure.md
 │   ├── integration-summary.md
 │   ├── modern-architecture-guide.md
 │   ├── modern-integration-plan.md
+│   ├── project-structure.md
 │   └── README.md
 ├── memory-bank/
 │   ├── accessibility-guide.md
