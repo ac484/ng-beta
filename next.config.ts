@@ -3,11 +3,29 @@ import { withSentryConfig } from '@sentry/nextjs';
 
 // Define the base Next.js configuration
 const baseConfig: NextConfig = {
+  experimental: {
+    // Enable Server Actions
+    serverActions: {
+      allowedOrigins: ['localhost:3000', process.env.VERCEL_URL].filter(Boolean) as string[]
+    }
+    // Note: PPR (Partial Prerendering) is only available in Next.js canary
+    // Uncomment when upgrading to canary: ppr: 'incremental'
+  },
   images: {
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'api.slingacademy.com',
+        port: ''
+      },
+      {
+        protocol: 'https',
+        hostname: 'firebasestorage.googleapis.com',
+        port: ''
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
         port: ''
       }
     ]

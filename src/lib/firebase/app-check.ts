@@ -52,24 +52,20 @@ export const getAppCheckInstance = (): AppCheck | null => {
 }
 
 // 驗證 App Check token (用於 Server Actions)
+// 注意：這個函數應該只在服務端使用
 export const verifyAppCheckToken = async (token: string): Promise<boolean> => {
+  // 這個函數應該在 Server Actions 中使用，不應該在客戶端調用
+  if (typeof window !== 'undefined') {
+    console.warn('verifyAppCheckToken should not be called on the client side')
+    return false
+  }
+  
   try {
-    // 使用 Firebase Admin SDK 驗證 token
-    const { adminAuth } = await import('./server')
-    
-    // 這裡需要實現 token 驗證邏輯
-    // 通常涉及調用 Firebase Admin SDK
-    const isValid = await verifyTokenWithAdminSDK(token)
-    
-    return isValid
+    // 在服務端環境中驗證 token
+    // 這個邏輯應該移到 Server Actions 中
+    return true // 暫時返回 true，實際驗證邏輯應該在 Server Actions 中實現
   } catch (error) {
     console.error('Error verifying App Check token:', error)
     return false
   }
-}
-
-async function verifyTokenWithAdminSDK(token: string): Promise<boolean> {
-  // 實現您的 token 驗證邏輯
-  // 這通常涉及調用 Firebase Admin SDK
-  return true // 示例返回值
 }

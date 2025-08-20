@@ -10,7 +10,9 @@ import {
   query,
   where,
   orderBy,
-  limit
+  limit,
+  Query,
+  DocumentData
 } from 'firebase/firestore'
 import { 
   ref, 
@@ -142,7 +144,7 @@ export class FirebaseService {
   // 查詢相關
   async queryCollection(collectionName: string, conditions: any[] = [], orderByField?: string, limitCount?: number) {
     try {
-      let q = collection(db, collectionName)
+      let q: Query<DocumentData> = collection(db, collectionName)
       
       // 添加條件
       conditions.forEach(condition => {

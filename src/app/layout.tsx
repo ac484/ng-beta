@@ -1,21 +1,28 @@
-'use client'
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+// import { ClerkProvider } from '@clerk/nextjs'
+import { Providers } from '@/components/providers'
+import './globals.css'
 
-import { useEffect } from 'react'
-import { initializeAppCheckWithRecaptcha } from '@/lib/firebase/app-check'
+const inter = Inter({ subsets: ['latin'] })
+
+export const metadata: Metadata = {
+  title: 'Integrated Workspace',
+  description: 'A unified platform for projects, partners, and documents',
+}
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  useEffect(() => {
-    // 初始化 Firebase App Check
-    initializeAppCheckWithRecaptcha()
-  }, [])
-
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body className={inter.className}>
+        <Providers>
+          {children}
+        </Providers>
+      </body>
     </html>
   )
 }
