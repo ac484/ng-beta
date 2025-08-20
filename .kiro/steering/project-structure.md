@@ -1,6 +1,6 @@
 # Project Structure
 
-> **Auto-generated on:** 2025-08-20T15:23:03.682Z  
+> **Auto-generated on:** 2025-08-20T16:10:46.568Z  
 > **Purpose:** AI code generation reference - shows relevant project structure for development
 
 ## Directory Tree
@@ -141,10 +141,12 @@
 │   │   ├── services/
 │   │   │   ├── analytics-service.ts
 │   │   │   ├── contract-service.ts
+│   │   │   ├── data-sync-service.ts
 │   │   │   ├── document-service.ts
 │   │   │   ├── firebase-service.ts
 │   │   │   ├── partner-service.ts
 │   │   │   ├── project-service.ts
+│   │   │   ├── relationship-service.ts
 │   │   │   └── supabase-service.ts
 │   │   ├── ai/
 │   │   │   ├── services/
@@ -175,6 +177,10 @@
 │   │   │   ├── server.ts
 │   │   │   └── types.ts
 │   │   ├── validations/
+│   │   │   ├── contracts.schemas.ts
+│   │   │   ├── document.schemas.ts
+│   │   │   ├── partner.schemas.ts
+│   │   │   └── projects.schemas.ts
 │   │   ├── data-table.ts
 │   │   ├── design-tokens.ts
 │   │   ├── error-reporting.ts
@@ -185,8 +191,12 @@
 │   ├── styles/
 │   ├── types/
 │   │   ├── auth.types.ts
+│   │   ├── contracts.types.ts
 │   │   ├── data-table.ts
-│   │   └── index.ts
+│   │   ├── document.types.ts
+│   │   ├── index.ts
+│   │   ├── partner.types.ts
+│   │   └── projects.types.ts
 │   ├── features/
 │   │   ├── analytics/
 │   │   │   ├── components/
@@ -322,6 +332,9 @@
 ├── components.json
 ├── creative_mode_think_tool.md
 ├── env.example.txt
+├── firebase.json
+├── firestore.indexes.json
+├── firestore.rules
 ├── Implementation.md
 ├── MEMORY_BANK_OPTIMIZATIONS.md
 ├── memory_bank_upgrade_guide.md
@@ -332,6 +345,7 @@
 ├── postcss.config.js
 ├── README.md
 ├── RELEASE_NOTES.md
+├── storage.rules
 ├── tsconfig.json
 └── tsconfig.tsbuildinfo
 

@@ -1,4 +1,3 @@
-import { Timestamp } from 'firebase/firestore';
 import { BaseEntity } from './projects.types';
 
 export type PartnerType =

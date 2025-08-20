@@ -1,7 +1,38 @@
 /**
- * @project NG-Beta Integrated Platform
+ * @project NG-Beta Integrated Platform - 現代化整合平台
+ * @framework Next.js 15+ (App Router)
+ * @typescript 5.0+
+ * @author NG-Beta Development Team
+ * @created 2025-01-17
+ * @updated 2025-01-21
+ * @version 1.0.0
+ *
  * @fileoverview 認證相關的 TypeScript 類型定義
- * @description 定義認證、權限、角色等相關的類型和介面
+ * @description 定義使用者認證、權限管理、角色控制等相關的類型和介面，
+ *              支援多層級權限控制、模組存取管理和會話狀態管理
+ *
+ * @tech-stack
+ * - Runtime: Node.js 20+
+ * - Framework: Next.js 15 (App Router)
+ * - Language: TypeScript 5.0+
+ * - Auth: Clerk Authentication
+ * - Validation: Zod (配合使用)
+ * - State: Zustand + React Context
+ *
+ * @features
+ * - 使用者角色和權限定義
+ * - 資源存取控制類型
+ * - 認證狀態管理介面
+ * - 模組權限映射
+ * - 會話和中間件配置
+ *
+ * @dependencies
+ * - @clerk/nextjs: Clerk 認證服務類型
+ *
+ * @environment
+ * - Node: >=20.0.0
+ * - Package Manager: pnpm
+ * - Build Tool: Turbopack
  */
 
 import { User } from '@clerk/nextjs/server';
@@ -183,21 +214,4 @@ export type AuthEventHandler = (event: AuthEvent, data?: any) => void;
 /**
  * 導出所有類型
  */
-export type {
-  User,
-  Permission,
-  UserInfo,
-  AuthState,
-  PermissionCheck,
-  ModulePermissions,
-  AllModulePermissions,
-  RolePermissionMap,
-  AuthMiddlewareConfig,
-  RouteProtectionConfig,
-  UserSession,
-  PermissionChecker,
-  RoleChecker,
-  AuthEventHandler
-};
-
-export { UserRole, PermissionAction, ResourceType };
+export type { User };

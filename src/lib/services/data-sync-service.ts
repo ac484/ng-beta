@@ -1,12 +1,89 @@
+/**
+ * @project NG-Beta Integrated Platform - 現代化整合平台
+ * @framework Next.js 15+ (App Router)
+ * @typescript 5.0+
+ * @author NG-Beta Development Team
+ * @created 2025-01-17
+ * @updated 2025-01-21
+ * @version 1.0.0
+ *
+ * @fileoverview Firebase 即時資料同步服務 - 提供跨模組的資料變更監聽和同步功能
+ * @description
+ * 實現基於 Firebase Firestore 的即時資料同步服務，使用單例模式管理多個實體類型的資料變更監聽。
+ * 支援訂閱/取消訂閱機制、使用者權限過濾、批量同步和自動清理功能，確保應用程式中的資料一致性。
+ *
+ * 主要功能：
+ * - 即時資料變更監聽 (onSnapshot)
+ * - 訂閱者模式管理多個監聽器
+ * - 使用者權限過濾和資料隔離
+ * - 批量同步和強制更新
+ * - 自動清理未使用的監聽器
+ * - 單例模式確保全域唯一實例
+ *
+ * @tech-stack
+ * - Runtime: Node.js 20+
+ * - Framework: Next.js 15 (App Router)
+ * - Language: TypeScript 5.0+
+ * - Database: Firebase Firestore v9+
+ * - State: 訂閱者模式 + Map 資料結構
+ * - Realtime: Firebase onSnapshot
+ *
+ * @features
+ * - 即時資料同步：基於 Firebase onSnapshot 的即時監聽
+ * - 權限過濾：根據 userId 過濾使用者專屬資料
+ * - 智慧清理：自動清理未使用的監聽器避免記憶體洩漏
+ * - 批量操作：支援批量同步多個實體
+ * - 錯誤處理：完整的錯誤處理和日誌記錄
+ *
+ * @dependencies
+ * - firebase/firestore: Firebase Firestore v9+ SDK
+ * - @/lib/firebase/client: Firebase 客戶端配置
+ *
+ * @environment
+ * - Node: >=20.0.0
+ * - Package Manager: pnpm
+ * - Build Tool: Turbopack
+ *
+ * @usage
+ * ```typescript
+ * import { dataSyncService } from '@/lib/services/data-sync-service'
+ *
+ * // 訂閱資料變更
+ * dataSyncService.subscribe(
+ *   'component-id',
+ *   (changes) => console.log('Data changed:', changes),
+ *   ['projects', 'contracts'],
+ *   userId
+ * )
+ *
+ * // 取消訂閱
+ * dataSyncService.unsubscribe('component-id')
+ *
+ * // 強制同步
+ * await dataSyncService.forceSync('projects', 'project-id', userId)
+ * ```
+ *
+ * @related
+ * - src/lib/firebase/client.ts: Firebase 客戶端配置
+ * - src/features/<module>/hooks: 各模組的資料 hooks
+ * - src/lib/services/<name>-service.ts: 其他業務服務
+ *
+ * @performance
+ * - 使用 Map 資料結構提供 O(1) 查找效能
+ * - 智慧監聽器管理避免重複訂閱
+ * - 自動清理機制防止記憶體洩漏
+ * - 批量操作減少網路請求次數
+ */
+
+import { db } from '@/lib/firebase/client';
 import {
-  onSnapshot,
-  doc,
   collection,
+  doc,
+  onSnapshot,
   query,
   where,
-  Unsubscribe
+  type Unsubscribe
 } from 'firebase/firestore';
-import { db } from '@/lib/firebase/client';
 
 type EntityType =
   | 'projects'
@@ -82,12 +159,11 @@ export class DataSyncService {
       return;
     }
 
-    let q = collection(db, entityType);
-
-    // 如果有 userId，只監聽該使用者的資料
-    if (userId) {
-      q = query(collection(db, entityType), where('createdBy', '==', userId));
-    }
+    // 建立查詢
+    const baseCollection = collection(db, entityType);
+    const q = userId
+      ? query(baseCollection, where('createdBy', '==', userId))
+      : baseCollection;
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const changes: DataChange[] = [];
@@ -149,7 +225,7 @@ export class DataSyncService {
   }
 
   // 手動觸發同步（用於強制更新）
-  async forcSync(
+  async forceSync(
     entityType: EntityType,
     entityId: string,
     userId: string
@@ -181,10 +257,10 @@ export class DataSyncService {
   // 批量同步多個實體
   async batchSync(
     entities: Array<{ type: EntityType; id: string }>,
-    userId: string
+    userId?: string
   ): Promise<void> {
     const promises = entities.map((entity) =>
-      this.forcSync(entity.type, entity.id, userId)
+      this.forceSync(entity.type, entity.id, userId || '')
     );
 
     await Promise.all(promises);

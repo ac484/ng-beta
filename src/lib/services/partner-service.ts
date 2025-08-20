@@ -1,11 +1,18 @@
+import { CreatePartnerData, Partner } from '@/types/partner.types';
 import { FirebaseService } from './firebase-service';
-import { Partner, CreatePartnerData } from '@/types/partner.types';
 
 export class PartnerService extends FirebaseService {
   private collectionName = 'partners';
 
   async createPartner(data: CreatePartnerData): Promise<Partner> {
-    return this.create<Partner>(this.collectionName, data);
+    const payload = {
+      projectIds: [],
+      documentIds: [],
+      collaborationIds: [],
+      contractIds: [],
+      ...data
+    };
+    return this.create<Partner>(this.collectionName, payload);
   }
 
   async getPartner(id: string, userId: string): Promise<Partner | null> {

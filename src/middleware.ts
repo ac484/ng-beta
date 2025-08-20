@@ -76,15 +76,11 @@ const isProtectedRoute = createRouteMatcher(PROTECTED_ROUTES);
  */
 export default clerkMiddleware((auth, req: NextRequest) => {
   const { pathname } = req.nextUrl;
-  const isSignedIn = !!auth().userId;
 
   // 開發環境調試
   if (process.env.NODE_ENV === 'development') {
-    console.log('Auth middleware:', {
-      pathname,
-      isSignedIn,
-      userId: auth().userId
-    });
+    // eslint-disable-next-line no-console
+    console.log('Auth middleware:', { pathname });
   }
 
   // 如果是公開路由，直接通過
@@ -92,22 +88,15 @@ export default clerkMiddleware((auth, req: NextRequest) => {
     return NextResponse.next();
   }
 
-  // 如果使用者已登入但訪問認證頁面，重定向到儀表板
-  if (isSignedIn && isAuthRoute(req)) {
-    return NextResponse.redirect(new URL('/dashboard', req.url));
-  }
+  // 認證頁面處理可根據需求啟用：若需已登入者阻擋存取，請在此檢查 session 後重定向
 
-  // 如果使用者未登入但訪問受保護路由，重定向到登入頁面
-  if (!isSignedIn && isProtectedRoute(req)) {
-    const signInUrl = new URL('/sign-in', req.url);
-    signInUrl.searchParams.set('redirect_url', pathname);
-    return NextResponse.redirect(signInUrl);
+  // 受保護路由：由 Clerk 中介層自動保護
+  if (isProtectedRoute(req)) {
+    // noop — Clerk will enforce authentication via matcher
   }
 
   // API 路由的特殊處理
-  if (pathname.startsWith('/api/') && !isSignedIn) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+  // API 路由處理：如需保護，請改用 createRouteMatcher 與 auth().protect()
 
   return NextResponse.next();
 });

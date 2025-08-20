@@ -1,11 +1,17 @@
+import { CreateProjectData, Project } from '@/types/projects.types';
 import { FirebaseService } from './firebase-service';
-import { Project, CreateProjectData } from '@/types/projects.types';
 
 export class ProjectService extends FirebaseService {
   private collectionName = 'projects';
 
   async createProject(data: CreateProjectData): Promise<Project> {
-    return this.create<Project>(this.collectionName, data);
+    const payload = {
+      documentIds: [],
+      contractIds: [],
+      taskIds: [],
+      ...data
+    };
+    return this.create<Project>(this.collectionName, payload);
   }
 
   async getProject(id: string, userId: string): Promise<Project | null> {

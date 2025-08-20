@@ -58,7 +58,7 @@ export const documentShareUpdateSchema = documentShareCreateSchema
 // 檔案上傳驗證
 export const fileUploadSchema = z
   .object({
-    file: z.instanceof(File, '請選擇一個檔案'),
+    file: z.instanceof(File, { message: '請選擇一個檔案' }),
     maxSize: z.number().default(10 * 1024 * 1024), // 10MB
     allowedTypes: z
       .array(z.string())

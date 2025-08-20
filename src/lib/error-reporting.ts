@@ -1,54 +1,60 @@
 interface ErrorReport {
-  message: string
-  stack?: string
-  url: string
-  userAgent: string
-  timestamp: string
-  userId?: string
-  additionalInfo?: Record<string, any>
+  message: string;
+  stack?: string;
+  url: string;
+  userAgent: string;
+  timestamp: string;
+  userId?: string;
+  additionalInfo?: Record<string, any>;
 }
 
 class ErrorReportingService {
-  private isEnabled: boolean
+  private isEnabled: boolean;
 
   constructor() {
-    this.isEnabled = process.env.NODE_ENV === 'production'
+    this.isEnabled = process.env.NODE_ENV === 'production';
   }
 
   captureException(error: Error, additionalInfo?: Record<string, any>) {
     if (!this.isEnabled) {
-      console.error('Error captured:', error, additionalInfo)
-      return
+      // eslint-disable-next-line no-console
+      console.error('Error captured:', error, additionalInfo);
+      return;
     }
 
     const report: ErrorReport = {
       message: error.message,
       stack: error.stack,
       url: typeof window !== 'undefined' ? window.location.href : '',
-      userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : '',
+      userAgent:
+        typeof window !== 'undefined' ? window.navigator.userAgent : '',
       timestamp: new Date().toISOString(),
-      additionalInfo,
-    }
+      additionalInfo
+    };
 
     // In a real application, you would send this to your error reporting service
     // For example: Sentry, LogRocket, Bugsnag, etc.
-    this.sendToErrorService(report)
+    this.sendToErrorService(report);
   }
 
-  captureMessage(message: string, level: 'info' | 'warning' | 'error' = 'info') {
+  captureMessage(
+    message: string,
+    level: 'info' | 'warning' | 'error' = 'info'
+  ) {
     if (!this.isEnabled) {
-      console.log(`[${level.toUpperCase()}] ${message}`)
-      return
+      // eslint-disable-next-line no-console
+      console.log(`[${level.toUpperCase()}] ${message}`);
+      return;
     }
 
     const report = {
       message,
       level,
       url: typeof window !== 'undefined' ? window.location.href : '',
-      timestamp: new Date().toISOString(),
-    }
+      timestamp: new Date().toISOString()
+    };
 
-    this.sendToErrorService(report)
+    this.sendToErrorService(report);
   }
 
   private async sendToErrorService(report: any) {
@@ -57,12 +63,13 @@ class ErrorReportingService {
       await fetch('/api/errors', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(report),
-      })
+        body: JSON.stringify(report)
+      });
     } catch (error) {
-      console.error('Failed to send error report:', error)
+      // eslint-disable-next-line no-console
+      console.error('Failed to send error report:', error);
     }
   }
 
@@ -81,4 +88,4 @@ class ErrorReportingService {
   }
 }
 
-export const errorReportingService = new ErrorReportingService()
+export const errorReportingService = new ErrorReportingService();
