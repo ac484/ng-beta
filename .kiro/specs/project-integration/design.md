@@ -23,9 +23,10 @@ graph TB
     end
     
     subgraph "功能模組"
-        PM[Portfolio 模組]
-        PV[PartnerVerse 模組]
-        DP[DocuParse 模組]
+        PM[Projects 模組]
+        CM[Contracts 模組]
+        PV[Partners 模組]
+        DP[Documents 模組]
         AN[Analytics 模組]
     end
     
@@ -46,11 +47,13 @@ graph TB
     UI --> AR
     AR --> PR
     PR --> PM
+    PR --> CM
     PR --> PV
     PR --> DP
     PR --> AN
     
     PM --> AS
+    CM --> AS
     PV --> AS
     DP --> AS
     AN --> AS
@@ -111,10 +114,11 @@ app/
 │   ├── sign-in/[[...sign-in]]/
 │   └── sign-up/[[...sign-up]]/
 ├── (dashboard)/                # 主要應用路由群組
-│   ├── @portfolio/             # Portfolio 平行路由槽
-│   ├── @partners/              # PartnerVerse 平行路由槽
-│   ├── @documents/             # DocuParse 平行路由槽
-│   ├── @analytics/             # Analytics 平行路由槽
+│   ├── @projects/              # 專案管理平行路由槽
+│   ├── @contracts/             # 合約管理平行路由槽
+│   ├── @partners/              # 夥伴管理平行路由槽
+│   ├── @documents/             # 文檔處理平行路由槽
+│   ├── @analytics/             # 分析儀表板平行路由槽
 │   ├── layout.tsx              # 統一佈局
 │   └── page.tsx                # 儀表板首頁
 └── api/                        # Route Handlers
@@ -126,7 +130,8 @@ app/
 // app/(dashboard)/layout.tsx
 interface DashboardLayoutProps {
   children: React.ReactNode
-  portfolio: React.ReactNode
+  projects: React.ReactNode
+  contracts: React.ReactNode
   partners: React.ReactNode
   documents: React.ReactNode
   analytics: React.ReactNode
@@ -134,7 +139,8 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({
   children,
-  portfolio,
+  projects,
+  contracts,
   partners,
   documents,
   analytics
@@ -150,23 +156,28 @@ export default function DashboardLayout({
         <div className="content-area">
           {children}
           <div className="modules-grid">
-            {activeModules.portfolio && (
-              <Suspense fallback={<ModuleSkeleton />}>
-                {portfolio}
+            {activeModules.projects && (
+              <Suspense fallback={<ModuleSkeleton name="Projects" />}>
+                {projects}
+              </Suspense>
+            )}
+            {activeModules.contracts && (
+              <Suspense fallback={<ModuleSkeleton name="Contracts" />}>
+                {contracts}
               </Suspense>
             )}
             {activeModules.partners && (
-              <Suspense fallback={<ModuleSkeleton />}>
+              <Suspense fallback={<ModuleSkeleton name="Partners" />}>
                 {partners}
               </Suspense>
             )}
             {activeModules.documents && (
-              <Suspense fallback={<ModuleSkeleton />}>
+              <Suspense fallback={<ModuleSkeleton name="Documents" />}>
                 {documents}
               </Suspense>
             )}
             {activeModules.analytics && (
-              <Suspense fallback={<ModuleSkeleton />}>
+              <Suspense fallback={<ModuleSkeleton name="Analytics" />}>
                 {analytics}
               </Suspense>
             )}
@@ -563,14 +574,14 @@ class DataSyncService {
 基於 Next.js 15 的最佳實踐，我們使用 Server Actions 取代傳統的 API Routes：
 
 ```typescript
-// lib/actions/portfolio-actions.ts
+// lib/actions/projects-actions.ts
 'use server'
 
 import { auth } from '@clerk/nextjs'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { projectService } from '@/lib/services/project-service'
-import { projectCreateSchema } from '@/lib/validations/portfolio.schemas'
+import { projectCreateSchema } from '@/lib/validations/projects.schemas'
 
 export async function createProject(formData: FormData) {
   const { userId } = auth()
@@ -594,7 +605,7 @@ export async function createProject(formData: FormData) {
     })
 
     revalidateTag('projects')
-    revalidatePath('/dashboard/portfolio')
+    revalidatePath('/dashboard/projects')
     
     return { success: true, data: project }
   } catch (error) {
@@ -644,7 +655,7 @@ export async function deleteProject(projectId: string) {
     await projectService.deleteProject(projectId, userId)
     
     revalidateTag('projects')
-    revalidatePath('/dashboard/portfolio')
+    revalidatePath('/dashboard/projects')
     
     return { success: true }
   } catch (error) {
@@ -661,7 +672,7 @@ export async function deleteProject(projectId: string) {
 使用 @tanstack/react-query 進行客戶端狀態管理和 Firebase 整合：
 
 ```typescript
-// lib/queries/portfolio-queries.ts
+// lib/queries/projects-queries.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@clerk/nextjs'
 import { projectService } from '@/lib/services/project-service'

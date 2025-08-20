@@ -139,13 +139,15 @@ const [isModalOpen, setIsModalOpen] = useState(false)
 // app/(dashboard)/layout.tsx
 export default function DashboardLayout({
   children,
-  portfolio,
+  projects,
+  contracts,
   partners,
   documents,
   analytics
 }: {
   children: React.ReactNode
-  portfolio: React.ReactNode
+  projects: React.ReactNode
+  contracts: React.ReactNode
   partners: React.ReactNode
   documents: React.ReactNode
   analytics: React.ReactNode
@@ -159,10 +161,17 @@ export default function DashboardLayout({
       <main className="main-content">
         {children}
         <ModuleContainer>
-          {permissions.portfolio && (
-            <ErrorBoundary fallback={<ModuleError module="Portfolio" />}>
+          {permissions.projects && (
+            <ErrorBoundary fallback={<ModuleError module="Projects" />}>
               <Suspense fallback={<ModuleSkeleton />}>
-                {portfolio}
+                {projects}
+              </Suspense>
+            </ErrorBoundary>
+          )}
+          {permissions.contracts && (
+            <ErrorBoundary fallback={<ModuleError module="Contracts" />}>
+              <Suspense fallback={<ModuleSkeleton />}>
+                {contracts}
               </Suspense>
             </ErrorBoundary>
           )}
@@ -187,7 +196,8 @@ export default function DashboardLayout({
 // lib/hooks/use-module-visibility.ts
 export function useModuleVisibility(permissions: UserPermissions) {
   return useMemo(() => ({
-    portfolio: permissions.includes('portfolio:read'),
+    projects: permissions.includes('projects:read'),
+    contracts: permissions.includes('contracts:read'),
     partners: permissions.includes('partners:read'),
     documents: permissions.includes('documents:read'),
     analytics: permissions.includes('analytics:read'),
@@ -243,6 +253,8 @@ const AnalyticsModule = dynamic(() => import('@/features/analytics'), {
 export default function Dashboard({ activeModules }: DashboardProps) {
   return (
     <div>
+      {activeModules.projects && <ProjectsModule />}
+      {activeModules.contracts && <ContractsModule />}
       {activeModules.analytics && <AnalyticsModule />}
     </div>
   )
@@ -327,30 +339,33 @@ export function ModuleErrorBoundary({ children, moduleName }: Props) {
 
 1. **定義 Server Action**
    ```typescript
-   // lib/actions/feature-actions.ts
+   // lib/actions/projects-actions.ts 或 contracts-actions.ts
    'use server'
-   export async function createFeature(formData: FormData) { ... }
+   export async function createProject(formData: FormData) { ... }
+   export async function createContract(formData: FormData) { ... }
    ```
 
 2. **建立 TanStack Query Hook**
    ```typescript
-   // lib/queries/feature-queries.ts
-   export function useCreateFeature() { ... }
+   // lib/queries/projects-queries.ts 或 contracts-queries.ts
+   export function useCreateProject() { ... }
+   export function useCreateContract() { ... }
    ```
 
 3. **實作 UI 元件**
    ```typescript
-   // components/feature/feature-form.tsx
-   export function FeatureForm() {
-     const createFeature = useCreateFeature()
+   // components/projects/project-form.tsx 或 components/contracts/contract-form.tsx
+   export function ProjectForm() {
+     const createProject = useCreateProject()
      // ...
    }
    ```
 
 4. **整合到平行路由**
    ```typescript
-   // app/(dashboard)/@feature/page.tsx
-   export default function FeaturePage() { ... }
+   // app/(dashboard)/@projects/page.tsx 或 app/(dashboard)/@contracts/page.tsx
+   export default function ProjectsPage() { ... }
+   export default function ContractsPage() { ... }
    ```
 
 ### 2. 測試策略

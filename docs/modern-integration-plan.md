@@ -33,14 +33,16 @@ src/
 │   │   ├── sign-in/
 │   │   └── sign-up/
 │   ├── (dashboard)/              # 主要應用路由群組
-│   │   ├── @portfolio/           # Portfolio 平行路由
-│   │   ├── @partners/            # PartnerVerse 平行路由
-│   │   ├── @documents/           # DocuParse 平行路由
+│   │   ├── @projects/            # 專案管理平行路由
+│   │   ├── @contracts/           # 合約管理平行路由
+│   │   ├── @partners/            # 夥伴管理平行路由
+│   │   ├── @documents/           # 文檔處理平行路由
 │   │   ├── @analytics/           # 分析儀表板平行路由
 │   │   ├── layout.tsx            # 統一佈局
 │   │   └── page.tsx              # 儀表板首頁
 │   ├── api/                      # Route Handlers (取代 API Routes)
-│   │   ├── portfolio/
+│   │   ├── projects/
+│   │   ├── contracts/
 │   │   ├── partners/
 │   │   ├── documents/
 │   │   └── ai/
@@ -50,12 +52,18 @@ src/
 ├── components/                   # 共用元件
 │   ├── ui/                       # shadcn/ui 基礎元件
 │   ├── layout/                   # 佈局元件
-│   ├── portfolio/                # Portfolio 專用元件
-│   ├── partners/                 # PartnerVerse 專用元件
-│   ├── documents/                # DocuParse 專用元件
+│   ├── projects/                 # 專案管理專用元件
+│   ├── contracts/                # 合約管理專用元件
+│   ├── partners/                 # 夥伴管理專用元件
+│   ├── documents/                # 文檔處理專用元件
 │   └── shared/                   # 跨模組共用元件
 ├── features/                     # 功能模組
-│   ├── portfolio/
+│   ├── projects/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── services/
+│   │   └── types/
+│   ├── contracts/
 │   │   ├── components/
 │   │   ├── hooks/
 │   │   ├── services/
@@ -84,21 +92,32 @@ src/
 
 ## 功能模組整合分析
 
-### 1. Portfolio 模組
+### 1. Projects 模組
 **現有功能**:
 - 專案管理系統
 - 任務追蹤
 - AI 子任務建議
 - 進度圖表
-- 合約管理
 
 **整合策略**:
 - 保留所有現有功能
-- 整合到 `@portfolio` 平行路由
+- 整合到 `@projects` 平行路由
 - 使用統一的 UI 元件庫
 - 保持 Firebase 資料結構
 
-### 2. PartnerVerse 模組  
+### 1.1. Contracts 模組
+**現有功能**:
+- 合約管理
+- AI 合約摘要
+- 合約狀態追蹤
+
+**整合策略**:
+- 從 Portfolio 中獨立出來
+- 整合到 `@contracts` 平行路由
+- 與 Projects 模組建立關聯
+- 專注於合約處理功能
+
+### 2. Partners 模組  
 **現有功能**:
 - 合作夥伴管理
 - 關係追蹤
@@ -109,7 +128,7 @@ src/
 - 與 Portfolio 模組建立關聯
 - 共享使用者認證系統
 
-### 3. DocuParse 模組
+### 3. Documents 模組
 **現有功能**:
 - 文件解析
 - 內容處理
@@ -141,13 +160,15 @@ src/
 // app/(dashboard)/layout.tsx
 export default function DashboardLayout({
   children,
-  portfolio,
+  projects,
+  contracts,
   partners, 
   documents,
   analytics
 }: {
   children: React.ReactNode
-  portfolio: React.ReactNode
+  projects: React.ReactNode
+  contracts: React.ReactNode
   partners: React.ReactNode
   documents: React.ReactNode
   analytics: React.ReactNode
@@ -158,7 +179,8 @@ export default function DashboardLayout({
       <main className="main-content">
         {children}
         <div className="modules-container">
-          {portfolio}
+          {projects}
+          {contracts}
           {partners}
           {documents}
           {analytics}
@@ -178,7 +200,8 @@ const ModuleRenderer = ({
 }: ModuleRendererProps) => {
   return (
     <>
-      {shouldShowPortfolio(currentRoute, userPermissions) && portfolio}
+      {shouldShowProjects(currentRoute, userPermissions) && projects}
+      {shouldShowContracts(currentRoute, userPermissions) && contracts}
       {shouldShowPartners(currentRoute, userPermissions) && partners}
       {shouldShowDocuments(currentRoute, userPermissions) && documents}
     </>
@@ -253,7 +276,13 @@ export class UnifiedAIService {
 ### 權限矩陣
 ```typescript
 interface PermissionMatrix {
-  portfolio: {
+  projects: {
+    view: boolean
+    create: boolean
+    edit: boolean
+    delete: boolean
+  }
+  contracts: {
     view: boolean
     create: boolean
     edit: boolean
@@ -283,7 +312,8 @@ interface PermissionMatrix {
 ### 程式碼分割
 ```typescript
 // 動態載入模組
-const PortfolioModule = dynamic(() => import('@/features/portfolio'))
+const ProjectsModule = dynamic(() => import('@/features/projects'))
+const ContractsModule = dynamic(() => import('@/features/contracts'))
 const PartnersModule = dynamic(() => import('@/features/partners'))
 const DocumentsModule = dynamic(() => import('@/features/documents'))
 ```
@@ -336,14 +366,15 @@ const DocumentsModule = dynamic(() => import('@/features/documents'))
 - 建立 CI/CD 流程
 
 ### 第二階段 (週 3-4): 核心模組遷移
-- Portfolio 模組整合
+- Projects 模組整合
 - 基礎認證系統
 - 資料層統一
 - 基本路由設定
 
 ### 第三階段 (週 5-6): 擴展模組整合
-- PartnerVerse 模組整合
-- DocuParse 模組整合
+- Contracts 模組整合
+- Partners 模組整合
+- Documents 模組整合
 - 跨模組資料關聯
 - AI 功能統一
 

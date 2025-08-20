@@ -535,7 +535,7 @@ src/
 ## 關鍵檔案說明
 
 ### 1. 平行路由結構
-- `@portfolio/`, `@partners/`, `@documents/`, `@analytics/` 為平行路由槽
+- `@projects/`, `@contracts/`, `@partners/`, `@documents/`, `@analytics/` 為平行路由槽
 - 每個槽都有 `default.tsx`, `loading.tsx`, `error.tsx` 用於狀態管理
 - 支援獨立的錯誤處理和載入狀態
 

@@ -26,13 +26,15 @@ inclusion: always
 // 標準平行路由佈局結構
 export default function DashboardLayout({
   children,
-  portfolio,
+  projects,
+  contracts,
   partners,
   documents,
   analytics
 }: {
   children: React.ReactNode
-  portfolio: React.ReactNode
+  projects: React.ReactNode
+  contracts: React.ReactNode
   partners: React.ReactNode
   documents: React.ReactNode
   analytics: React.ReactNode
@@ -57,9 +59,10 @@ src/
 ├── components/             # 共用元件
 │   ├── ui/                # shadcn/ui 基礎元件
 │   ├── layout/            # 佈局元件
-│   ├── portfolio/         # Portfolio 專用元件
-│   ├── partners/          # Partners 專用元件
-│   ├── documents/         # Documents 專用元件
+│   ├── projects/          # 專案管理專用元件
+│   ├── contracts/         # 合約管理專用元件
+│   ├── partners/          # 夥伴管理專用元件
+│   ├── documents/         # 文檔處理專用元件
 │   └── shared/            # 跨模組共用元件
 ├── features/              # 功能模組
 ├── lib/                   # 工具函數和配置
