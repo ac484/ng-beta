@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "name": "平行路由配置檢查",
+  "description": "檢查平行路由配置的一致性，確保所有槽都有對應的 default.tsx、loading.tsx、error.tsx 檔案，並且 layout.tsx 中正確處理所有槽的 props",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/app/(dashboard)/@*/**/*",
+      "src/app/(dashboard)/layout.tsx"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "檢查平行路由的配置是否正確。確保所有槽都有對應的 default.tsx、loading.tsx、error.tsx 檔案，並且 layout.tsx 中正確處理所有槽的 props。檢查項目包括：\n\n1. 檔案結構完整性：\n   - 每個 @槽位 目錄都有 default.tsx\n   - 每個 @槽位 目錄都有 loading.tsx  \n   - 每個 @槽位 目錄都有 error.tsx\n   - 每個 @槽位 目錄都有 page.tsx\n\n2. Layout.tsx 配置：\n   - 所有槽位都在 layout.tsx 的 props 中定義\n   - TypeScript 類型定義正確\n   - 所有槽位都在 JSX 中正確渲染\n\n3. 命名一致性：\n   - 槽位目錄名稱符合 @name 格式\n   - 檔案命名符合 Next.js 約定\n\n4. 最佳實踐檢查：\n   - default.tsx 檔案返回適當的內容\n   - loading.tsx 提供有意義的載入狀態\n   - error.tsx 包含錯誤處理邏輯\n\n請提供詳細的檢查結果和改進建議。"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "enabled": true,
+  "name": "效能監控 Hook",
+  "description": "分析應用程式效能並提供最佳化建議，包括 bundle 大小分析、程式碼分割效果檢查、未使用依賴檢測等",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "package.json",
+      "next.config.ts",
+      "next.config.js",
+      "webpack.config.js",
+      "tsconfig.json",
+      ".next/build-manifest.json",
+      ".next/static/**/*",
+      "dist/**/*",
+      "build/**/*"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "分析建置輸出，檢查 bundle 大小、程式碼分割效果、未使用的依賴等。提供效能最佳化建議，包括程式碼分割、懶載入、快取策略等。請根據 Next.js 15 App Router 最佳實踐和專案整合標準進行分析，特別關注平行路由、Server Actions、TanStack Query 的效能影響。"
+  }
+}

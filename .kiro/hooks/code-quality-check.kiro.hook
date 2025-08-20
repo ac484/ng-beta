@@ -1,0 +1,19 @@
+{
+  "enabled": true,
+  "name": "Code Quality Check",
+  "description": "自動檢查程式碼品質並修復格式問題",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "**/*.{ts",
+      "tsx",
+      "js",
+      "jsx}"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A TypeScript/JavaScript file has been saved. Please run the following commands to ensure code quality:\n\n1. Execute `npm run lint:fix` to automatically fix ESLint issues\n2. Execute `npm run format` to format the code with Prettier\n\nAfter running these commands, provide a brief summary of any issues found and fixed."
+  }
+}

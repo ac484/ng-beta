@@ -14,7 +14,6 @@ const EXCLUDED_DIRS = [
   'node_modules',
   '.cursor',
   '.vscode',
-  '.kiro',
   'dist',
   'build',
   'coverage',
@@ -147,7 +146,8 @@ function generateTree(dir, prefix = '', maxDepth = 4, currentDepth = 0) {
 
 function generateProjectStructure() {
   const projectRoot = process.cwd();
-  const outputFile = path.join(projectRoot, 'docs', 'project-structure.md');
+  const docsOutputFile = path.join(projectRoot, 'docs', 'project-structure.md');
+  const kiroOutputFile = path.join(projectRoot, '.kiro', 'steering', 'project-structure.md');
   
   console.log('🌳 Generating project structure tree...');
   
@@ -192,15 +192,24 @@ ${EXCLUDED_DIRS.map(dir => `- \`${dir}/\` - ${getExclusionReason(dir)}`).join('\
 `;
 
     // Ensure docs directory exists
-    const docsDir = path.dirname(outputFile);
+    const docsDir = path.dirname(docsOutputFile);
     if (!fs.existsSync(docsDir)) {
       fs.mkdirSync(docsDir, { recursive: true });
     }
     
-    // Write the file
-    fs.writeFileSync(outputFile, content, 'utf8');
+    // Ensure .kiro/steering directory exists
+    const kiroDir = path.dirname(kiroOutputFile);
+    if (!fs.existsSync(kiroDir)) {
+      fs.mkdirSync(kiroDir, { recursive: true });
+    }
     
-    console.log(`✅ Project structure saved to: ${outputFile}`);
+    // Write both files
+    fs.writeFileSync(docsOutputFile, content, 'utf8');
+    fs.writeFileSync(kiroOutputFile, content, 'utf8');
+    
+    console.log(`✅ Project structure saved to:`);
+    console.log(`   📁 docs: ${docsOutputFile}`);
+    console.log(`   🎯 .kiro/steering: ${kiroOutputFile}`);
     console.log(`📊 Tree depth: 4 levels`);
     console.log(`🚫 Excluded ${EXCLUDED_DIRS.length} directories`);
     
@@ -253,7 +262,6 @@ function getExclusionReason(dirName) {
     'node_modules': 'Dependencies (can be reinstalled)',
     '.cursor': 'Editor-specific files',
     '.vscode': 'Editor-specific configuration',
-    '.kiro': 'Tool-specific configuration',
     'dist': 'Build output directory',
     'build': 'Build output directory',
     'coverage': 'Test coverage reports',

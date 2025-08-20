@@ -1,0 +1,17 @@
+{
+  "enabled": true,
+  "name": "型別定義同步 Hook",
+  "description": "當資料模型變更時自動同步相關型別定義，檢查 API 路由、元件 props、store 狀態等是否需要同步更新",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "src/types/**/*.ts",
+      "src/lib/validations/**/*.ts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "檢查修改的型別定義檔案，確保所有相關的檔案都已更新對應的型別。檢查 API 路由、元件 props、store 狀態等是否需要同步更新。請分析以下內容：\n\n1. 識別修改的型別定義和介面\n2. 找出使用這些型別的相關檔案\n3. 檢查是否需要更新：\n   - API 路由的請求/回應型別\n   - React 元件的 props 型別\n   - Zustand/Redux store 的狀態型別\n   - 表單驗證 schema\n   - 資料庫模型型別\n4. 提供具體的更新建議和程式碼範例\n5. 確保型別安全性和一致性\n\n請提供詳細的分析報告和建議的修改方案。"
+  }
+}
