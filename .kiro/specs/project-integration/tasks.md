@@ -113,13 +113,17 @@
 
 
 
-- [ ] 4.1 配置 Firebase 整合
+- [x] 4.1 配置 Firebase 整合
+
+
   - 設定 Firebase 專案和服務配置
   - 建立 Firestore 資料庫結構和安全規則
   - 配置 Firebase Storage 用於檔案管理
 
 
   - _需求: 6.1, 6.2, 10.3_
+
+
 
 - [ ] 4.2 建立統一資料模型
   - 設計跨模組的資料實體和關聯結構
@@ -141,33 +145,41 @@
   - 建立 Firebase 服務層和資料存取邏輯
   - _需求: 3.1, 4.1, 5.1, 6.1, 10.1, 11.2_
 
-- [ ] 5.1 建立 Firebase 服務基礎架構
+- [x] 5.1 建立 Firebase 服務基礎架構
+
   - 配置 Firebase v9+ 模組化 SDK
   - 建立統一的 Firebase 服務基礎類別
   - 設定開發環境模擬器連接
   - _需求: 6.1, 10.3_
 
-- [ ] 5.2 實作 Projects Server Actions
+- [x] 5.2 實作 Projects Server Actions
+
+
   - 建立專案、任務的 Server Actions
   - 實作資料驗證和權限檢查
   - 整合 revalidateTag 和 revalidatePath 進行快取管理
   - _需求: 3.1, 3.2, 3.4, 3.5_
+
+
 
 - [ ] 5.3 實作 Contracts Server Actions
   - 建立合約 CRUD 操作的 Server Actions
   - 實作合約資料驗證和權限檢查
   - 整合 AI 合約分析和摘要功能
   - 建立合約狀態追蹤和提醒系統
+
   - _需求: 3.1, 3.3, 3.4_
 
 - [ ] 5.4 實作 Partners Server Actions
   - 建立夥伴、關係、協作的 Server Actions
   - 實作夥伴搜尋和篩選邏輯
+
   - 建立夥伴網絡分析功能
   - _需求: 4.1, 4.2, 4.3, 4.4, 4.5_
 
 - [ ] 5.5 實作 Documents Server Actions
   - 建立文件上傳、解析、管理的 Server Actions
+
   - 整合 Firebase Storage 進行檔案管理
   - 實作文件搜尋和關聯邏輯
   - _需求: 5.1, 5.2, 5.3, 5.4, 5.5_

@@ -1,6 +1,6 @@
 # Project Structure
 
-> **Auto-generated on:** 2025-08-20T16:10:46.568Z  
+> **Auto-generated on:** 2025-08-20T17:09:04.552Z  
 > **Purpose:** AI code generation reference - shows relevant project structure for development
 
 ## Directory Tree

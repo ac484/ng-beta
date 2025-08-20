@@ -1,184 +1,267 @@
-/**
- * @project NG-Beta Integrated Platform - 現代化整合平台
- * @framework Next.js 15+ (App Router)
- * @typescript 5.0+
- * @author NG-Beta Development Team
- * @created 2025-01-17
- * @updated 2025-01-21
- * @version 1.0.0
- *
- * @fileoverview 文檔管理服務類別 - 提供文檔相關的資料庫操作和檔案管理功能
- * @description
- * 文檔管理服務，繼承自 FirebaseService，提供完整的文檔 CRUD 操作。
- * 支援檔案上傳、權限檢查、專案關聯查詢等功能，整合 Firebase Storage 進行檔案存儲，
- * 確保資料安全性和業務邏輯正確性。
- *
- * 主要功能：
- * - 文檔建立、讀取、更新、刪除 (CRUD)
- * - 檔案上傳和存儲管理
- * - 基於使用者權限的資料存取控制
- * - 專案關聯文檔查詢
- * - Firebase Storage 整合
- * - 檔案元數據管理
- *
- * @tech-stack
- * - Runtime: Node.js 20+
- * - Framework: Next.js 15 (App Router)
- * - Language: TypeScript 5.0+
- * - Database: Firebase Firestore v9+
- * - Storage: Firebase Storage v9+
- * - Auth: Clerk Authentication
- * - State: TanStack Query + Zustand
- * - Validation: Zod (via document.schemas.ts)
- *
- * @features
- * - 權限控制：確保使用者只能存取自己的文檔
- * - 檔案管理：完整的檔案上傳、下載、刪除功能
- * - 專案整合：支援與專案模組的關聯查詢
- * - 元數據處理：自動處理檔案元數據和存儲路徑
- * - 錯誤處理：完整的錯誤處理和權限驗證
- *
- * @dependencies
- * - @/types/document.types: 文檔相關類型定義
- * - ./firebase-service: Firebase 基礎服務類別
- *
- * @environment
- * - Node: >=20.0.0
- * - Package Manager: pnpm
- * - Build Tool: Turbopack
- *
- * @usage
- * ```typescript
- * import { documentService } from '@/lib/services/document-service'
- *
- * // 上傳並建立文檔
- * const document = await documentService.uploadAndCreateDocument(
- *   file,
- *   { projectId: 'project-123', type: 'contract' },
- *   userId
- * )
- *
- * // 查詢使用者文檔
- * const documents = await documentService.getDocuments(userId)
- *
- * // 查詢專案相關文檔
- * const projectDocs = await documentService.getDocumentsByProject(projectId, userId)
- * ```
- *
- * @related
- * - src/features/documents/: 文檔功能模組
- * - src/app/(dashboard)/@documents/: 文檔平行路由
- * - src/types/document.types.ts: 文檔類型定義
- * - src/lib/validations/document.schemas.ts: 文檔驗證規則
- */
-
-import { CreateDocumentData, Document } from '@/types/document.types';
-import { FirebaseService } from './firebase-service';
+import {
+  Document,
+  DocumentShare,
+  DocumentVersion
+} from '@/types/document.types';
+import { CreateData, FirebaseService, UpdateData } from './firebase-service';
+import { document } from 'postcss';
 
 export class DocumentService extends FirebaseService {
-  private collectionName = 'documents';
+  private documentsCollection = 'documents';
+  private versionsCollection = 'document_versions';
+  private sharesCollection = 'document_shares';
 
-  async createDocument(data: CreateDocumentData): Promise<Document> {
-    const payload = {
-      keywords: [],
-      entities: [],
-      processingStatus: 'pending' as const,
-      ...data
-    };
-    return this.create<Document>(this.collectionName, payload);
+  // Documents
+  async createDocument(data: CreateData<Document>): Promise<Document> {
+    return this.create<Document>(this.documentsCollection, data);
   }
 
   async getDocument(id: string, userId: string): Promise<Document | null> {
-    const document = await this.read<Document>(this.collectionName, id);
+    const document = await this.read<Document>(this.documentsCollection, id);
 
-    // 檢查權限
     if (document && document.createdBy !== userId) {
-      throw new Error('Unauthorized');
+      // Check if document is shared with user
+      const isShared = await this.isDocumentSharedWithUser(id, userId);
+      if (!isShared) {
+        throw new Error('Unauthorized');
+      }
     }
 
     return document;
   }
 
   async getDocuments(userId: string): Promise<Document[]> {
-    return this.list<Document>(this.collectionName, {
-      where: [{ field: 'createdBy', operator: '==', value: userId }],
+    return this.list<Document>(this.documentsCollection, {
+      where: [['createdBy', '==', userId]],
       orderBy: [['updatedAt', 'desc']]
     });
   }
 
-  async getDocumentsByProject(
+  async getProjectDocuments(
     projectId: string,
     userId: string
   ): Promise<Document[]> {
-    return this.list<Document>(this.collectionName, {
+    return this.list<Document>(this.documentsCollection, {
       where: [
-        { field: 'projectId', operator: '==', value: projectId },
-        { field: 'createdBy', operator: '==', value: userId }
+        ['projectId', '==', projectId],
+        ['createdBy', '==', userId]
       ],
       orderBy: [['updatedAt', 'desc']]
     });
   }
 
-  async uploadAndCreateDocument(
-    file: File,
-    metadata: Omit<
-      CreateDocumentData,
-      'filename' | 'originalName' | 'mimeType' | 'size' | 'url'
-    >,
+  async getPartnerDocuments(
+    partnerId: string,
     userId: string
-  ): Promise<Document> {
-    // 上傳檔案到 Firebase Storage
-    const filePath = `documents/${userId}/${Date.now()}-${file.name}`;
-    const downloadURL = await this.uploadFile(filePath, file);
+  ): Promise<Document[]> {
+    return this.list<Document>(this.documentsCollection, {
+      where: [
+        ['partnerId', '==', partnerId],
+        ['createdBy', '==', userId]
+      ],
+      orderBy: [['updatedAt', 'desc']]
+    });
+  }
 
-    // 建立文件記錄
-    const documentData: CreateDocumentData = {
-      ...metadata,
-      filename: filePath,
-      originalName: file.name,
-      mimeType: file.type,
-      size: file.size,
-      url: downloadURL,
-      createdBy: userId,
-      updatedBy: userId
-    };
-
-    return this.createDocument(documentData);
+  async getContractDocuments(
+    contractId: string,
+    userId: string
+  ): Promise<Document[]> {
+    return this.list<Document>(this.documentsCollection, {
+      where: [
+        ['contractId', '==', contractId],
+        ['createdBy', '==', userId]
+      ],
+      orderBy: [['updatedAt', 'desc']]
+    });
   }
 
   async updateDocument(
     id: string,
-    data: Partial<Document>,
+    data: UpdateData<Document>,
     userId: string
-  ): Promise<Document> {
-    // 先檢查權限
+  ): Promise<void> {
     const existingDocument = await this.getDocument(id, userId);
     if (!existingDocument) {
       throw new Error('Document not found or unauthorized');
     }
 
-    await this.update(this.collectionName, id, data);
-    return { ...existingDocument, ...data } as Document;
+    await this.update(this.documentsCollection, id, data);
   }
 
   async deleteDocument(id: string, userId: string): Promise<void> {
-    // 先檢查權限
     const existingDocument = await this.getDocument(id, userId);
     if (!existingDocument) {
       throw new Error('Document not found or unauthorized');
     }
 
-    // 刪除 Storage 中的檔案
-    if (existingDocument.filename) {
-      try {
-        await this.deleteFile(existingDocument.filename);
-      } catch (error) {
-        console.warn('Failed to delete file from storage:', error);
+    // Delete related versions and shares
+    const versions = await this.getDocumentVersions(id, userId);
+    for (const version of versions) {
+      await this.delete(this.versionsCollection, version.id);
+    }
+
+    const shares = await this.getDocumentShares(id, userId);
+    for (const share of shares) {
+      await this.delete(this.sharesCollection, share.id);
+    }
+
+    await this.delete(this.documentsCollection, id);
+  }
+
+  // Document Versions
+  async createDocumentVersion(
+    data: CreateData<DocumentVersion>
+  ): Promise<DocumentVersion> {
+    return this.create<DocumentVersion>(this.versionsCollection, data);
+  }
+
+  async getDocumentVersions(
+    documentId: string,
+    userId: string
+  ): Promise<DocumentVersion[]> {
+    return this.list<DocumentVersion>(this.versionsCollection, {
+      where: [
+        ['documentId', '==', documentId],
+        ['createdBy', '==', userId]
+      ],
+      orderBy: [['version', 'desc']]
+    });
+  }
+
+  async getLatestVersion(
+    documentId: string,
+    userId: string
+  ): Promise<DocumentVersion | null> {
+    const versions = await this.getDocumentVersions(documentId, userId);
+    return versions.length > 0 ? versions[0] : null;
+  }
+
+  // Document Shares
+  async createDocumentShare(
+    data: CreateData<DocumentShare>
+  ): Promise<DocumentShare> {
+    return this.create<DocumentShare>(this.sharesCollection, data);
+  }
+
+  async getDocumentShares(
+    documentId: string,
+    userId: string
+  ): Promise<DocumentShare[]> {
+    return this.list<DocumentShare>(this.sharesCollection, {
+      where: [
+        ['documentId', '==', documentId],
+        ['createdBy', '==', userId]
+      ],
+      orderBy: [['createdAt', 'desc']]
+    });
+  }
+
+  async getSharedDocuments(userId: string): Promise<Document[]> {
+    const shares = await this.list<DocumentShare>(this.sharesCollection, {
+      where: [['sharedWith', '==', userId]]
+    });
+
+    const documents: Document[] = [];
+    for (const share of shares) {
+      const document = await this.read<Document>(
+        this.documentsCollection,
+        share.documentId
+      );
+      if (document) {
+        documents.push(document);
       }
     }
 
-    // 刪除文件記錄
-    await this.delete(this.collectionName, id);
+    return documents;
+  }
+
+  async isDocumentSharedWithUser(
+    documentId: string,
+    userId: string
+  ): Promise<boolean> {
+    const shares = await this.list<DocumentShare>(this.sharesCollection, {
+      where: [
+        ['documentId', '==', documentId],
+        ['sharedWith', '==', userId]
+      ],
+      limit: 1
+    });
+
+    return shares.length > 0;
+  }
+
+  async updateDocumentShare(
+    id: string,
+    data: UpdateData<DocumentShare>,
+    userId: string
+  ): Promise<void> {
+    const existingShare = await this.read<DocumentShare>(
+      this.sharesCollection,
+      id
+    );
+    if (!existingShare || existingShare.createdBy !== userId) {
+      throw new Error('Share not found or unauthorized');
+    }
+
+    await this.update(this.sharesCollection, id, data);
+  }
+
+  async deleteDocumentShare(id: string, userId: string): Promise<void> {
+    const existingShare = await this.read<DocumentShare>(
+      this.sharesCollection,
+      id
+    );
+    if (!existingShare || existingShare.createdBy !== userId) {
+      throw new Error('Share not found or unauthorized');
+    }
+
+    await this.delete(this.sharesCollection, id);
+  }
+
+  // Utility methods
+  async searchDocuments(query: string, userId: string): Promise<Document[]> {
+    const documents = await this.getDocuments(userId);
+
+    return documents.filter(
+      (document) =>
+        document.filename.toLowerCase().includes(query.toLowerCase()) ||
+        document.originalName.toLowerCase().includes(query.toLowerCase()) ||
+        document.description?.toLowerCase().includes(query.toLowerCase()) ||
+        document.extractedText?.toLowerCase().includes(query.toLowerCase()) ||
+        document.keywords.some((keyword) =>
+          keyword.toLowerCase().includes(query.toLowerCase())
+        ) ||
+        document.tags.some((tag) =>
+          tag.toLowerCase().includes(query.toLowerCase())
+        )
+    );
+  }
+
+  async getDocumentsByType(
+    type: Document['type'],
+    userId: string
+  ): Promise<Document[]> {
+    return this.list<Document>(this.documentsCollection, {
+      where: [
+        ['createdBy', '==', userId],
+        ['type', '==', type]
+      ],
+      orderBy: [['updatedAt', 'desc']]
+    });
+  }
+
+  async getDocumentsByProcessingStatus(
+    status: Document['processingStatus'],
+    userId: string
+  ): Promise<Document[]> {
+    return this.list<Document>(this.documentsCollection, {
+      where: [
+        ['createdBy', '==', userId],
+        ['processingStatus', '==', status]
+      ],
+      orderBy: [['updatedAt', 'desc']]
+    });
   }
 }
 
