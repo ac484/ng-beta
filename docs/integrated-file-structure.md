@@ -474,14 +474,13 @@ src/
 │   │   │   └── document-ai.ts
 │   │   └── types/
 │   │       └── ai.types.ts
-│   ├── auth/
-│   │   ├── clerk.ts
-│   │   ├── permissions.ts
-│   │   └── middleware.ts
-│   ├── firebase/
-│   │   ├── config.ts
-│   │   ├── collections.ts
-│   │   └── migrations.ts
+│   ├── firebase/                 # Firebase 配置
+│   │   ├── config.ts             # Firebase 基礎配置
+│   │   ├── client.ts             # 客戶端 Firebase 配置
+│   │   ├── server.ts             # 服務端 Firebase 配置
+│   │   ├── auth.ts               # 認證相關配置
+│   │   ├── app-check.ts          # App Check 配置 (reCAPTCHA v3)
+│   │   └── types.ts              # Firebase 類型定義
 │   ├── supabase/                 # Supabase 配置
 │   │   ├── client.ts             # Supabase 客戶端配置
 │   │   ├── server.ts             # 服務端 Supabase 配置

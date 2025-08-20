@@ -1,0 +1,429 @@
+---
+globs: *.ts,*.tsx,*.json
+alwaysApply: false
+---
+> 少，但更好。
+> Less, but better.
+> —— Dieter Rams
+
+---
+
+> 最好的設計是最簡單但能運作的設計。
+> The best design is the simplest one that works.
+> —— （傳）愛因斯坦 / (Attributed to) Albert Einstein
+
+---
+
+> 簡化的能力，就是刪去多餘，讓必要的說話。
+> The ability to simplify means to eliminate the unnecessary so that the necessary may speak.
+> —— Hans Hofmann
+
+---
+
+> 極簡不是缺乏什麼，而是恰到好處。
+> Minimalism is not a lack of something. It's simply the perfect amount of something.
+> —— Nicholas Burroughs
+
+---
+
+> 簡單歸結為兩步：找出本質，刪除其餘。
+> Simplicity boils down to two steps: Identify the essential. Eliminate the rest.
+> —— Leo Babauta
+
+---
+
+> 簡單——最大限度減少未做的工作——是至關重要的。
+> Simplicity—the art of maximizing the amount of work not done—is essential.
+> —— 敏捷宣言 / Agile Manifesto
+
+---
+
+> 任何傻瓜都能讓事情變複雜，唯有天才能讓它變簡單。
+> Any fool can make something complicated. It takes a genius to make it simple.
+> —— Woody Guthrie
+
+---
+
+> 清晰重於聰明。
+> Clarity is better than cleverness.
+> —— Dan McKinley（前 GitHub 工程師 / former GitHub engineer）
+
+---
+
+> 簡單的事應該簡單，複雜的事應該可行。
+> Simple things should be simple, complex things should be possible.
+> —— Alan Kay
+
+---
+
+> 極簡不是剝奪，而是更珍惜真正重要的事物。
+> Simplicity is not about deprivation. Simplicity is about a greater appreciation for things that really matter.
+> —— Anonymous
+
+---
+
+> 設計不僅僅是外觀和感覺，而是它如何運作。
+> Design is not just what it looks like and feels like. Design is how it works.
+> —— Steve Jobs
+
+---
+
+> 可靠性的代價是對極致簡單的追求。
+> The price of reliability is the pursuit of the utmost simplicity.
+> —— Tony Hoare
+
+---
+
+> 軟體開發最重要的一點就是明確你想要建造什麼。
+> The most important single aspect of software development is to be clear about what you are trying to build.
+> —— Bjarne Stroustrup
+
+---
+
+> 如果你做不到好，至少要讓它好看。
+> If you can't make it good, at least make it look good.
+> —— Bill Gates
+
+---
+
+> 預測未來最好的方式是創造它。
+> The best way to predict the future is to invent it.
+> —— Alan Kay
+
+---
+
+> 軟體設計有兩種方式：一種是簡單到沒有明顯缺陷，另一種是複雜到沒有明顯缺陷。
+> There are two ways of constructing a software design: One way is to make it so simple that there are obviously no deficiencies and the other way is to make it so complicated that there are no obvious deficiencies.
+> —— C. A. R. Hoare
+
+---
+
+> 小即是美。
+> Small is beautiful.
+> —— E. F. Schumacher
+
+---
+
+> 最簡的解法幾乎總是最好的。
+> The simplest solution is almost always the best.
+> —— 奧卡姆剃刀 / Occam's Razor
+
+---
+
+> 好設計即最少設計。
+> Good design is as little design as possible.
+> —— Dieter Rams
+
+---
+
+> 留白是主動元素，不是被動背景。
+> Whitespace is to be regarded as an active element, not a passive background.
+> —— Jan Tschichold
+
+---
+
+> 細節不是細節，它們成就設計。
+> The details are not the details. They make the design.
+> —— Charles Eames
+
+---
+
+> 簡單是減去顯而易見並加上有意義的東西。
+> Simplicity is about subtracting the obvious and adding the meaningful.
+> —— John Maeda
+
+---
+
+> 簡單是可靠的前提。
+> Simplicity is prerequisite for reliability.
+> —— Edsger W. Dijkstra
+
+---
+
+> 先解決問題，再寫程式。
+> First, solve the problem. Then, write the code.
+> —— John Johnson
+
+---
+
+> 如果你無法簡單解釋，那你還沒理解夠深。
+> If you can't explain it simply, you don't understand it well enough.
+> —— 愛因斯坦 / Albert Einstein
+
+---
+
+> 過早的最佳化是萬惡之源。
+> Premature optimization is the root of all evil.
+> —— Donald Knuth
+
+---
+
+> 程式就像幽默，你需要說明就不好笑了。
+> Code is like humor. When you have to explain it, it's bad.
+> —— Cory House
+
+---
+
+> 最好的程式碼就是不寫程式碼。
+> The best code is no code at all.
+> —— Jeff Atwood
+
+---
+
+> 好、快、便宜，三選二。
+> Good, fast, cheap. Pick two.
+> —— 軟體工程三角 / Software Engineering Triangle
+
+---
+
+## 🚀 Angular 與現代前端極簡開發原則 Angular & Modern Frontend Minimalism Principles
+
+> 優先使用 Angular 內建功能，減少第三方依賴。
+> Embrace Angular built-in features.
+> — Prefer Angular native features to reduce third-party dependencies.
+
+---
+
+> 服務邏輯直接寫在服務中，保持檔案與邏輯極簡。
+> Keep services simple and focused.
+> — Write service logic directly in services, keeping files and logic minimal.
+
+---
+
+> 僅在需要互動時才使用 Client Components。
+> Only use Client Components when necessary.
+> — Use Client Components only when interactivity is needed.
+
+---
+
+> 每個檔案/元件只做一件事。
+> Single Responsibility Principle.
+> — Every file/component should do only one thing.
+
+---
+
+> 檔案與資料夾結構扁平、可預期。
+> Flat and predictable structure.
+> — Keep the file and folder structure flat and predictable.
+
+---
+
+> 少即是多，每段程式碼都遵循這原則。
+> Less is more.
+> — Every piece of code produced should embody this principle.
+
+---
+
+> 僅實作現在需要的功能，不為未來預留過多結構。
+> No future-proofing code.
+> — Only implement what is needed now, avoid overengineering for possible future needs.
+
+---
+
+> 偏好組合而非抽象，除非重複性極高。
+> Prefer composition over abstraction.
+> — Prefer composition over abstraction unless repetition is very high.
+
+---
+
+> 嚴禁只為包裝 UI 或 props 的無用 Wrapper 元件。
+> No wrapper components without logic.
+> — Avoid wrapper components that only wrap UI or props without logic.
+
+---
+
+> 優先用 Angular、TypeScript 原生功能，不輕易引入第三方。
+> Use native features first.
+> — Prefer Angular and TypeScript native features before introducing third-party libraries.
+
+---
+
+> 每個檔案都應可獨立測試且極簡。
+> Every file should be a small, testable unit.
+> — Each file should be independently testable and minimal.
+
+---
+
+> 有重複時才重構，沒重複勿抽象。
+> If you're repeating yourself, refactor. If you're not, don't abstract.
+> — Refactor only after repetition emerges; avoid premature abstraction.
+
+---
+
+> 先追求可讀性，再追求效能。
+> Optimize for readability, then for performance.
+> — Readability first, then performance.
+
+---
+
+> 優先社群慣例，減少自訂設定。
+> Favor convention over configuration.
+> — Prefer community conventions, minimize custom configurations.
+
+---
+
+> 讓框架自動處理繁雜細節，專注核心邏輯。
+> Let the framework do the heavy lifting.
+> — Let the framework handle complexity, focus on core logic.
+
+---
+
+> 必要時才 SSR，能靜態就 SSG，只有必須時才 CSR。
+> SSR when you must, SSG when you can, CSR only when required.
+> — Use Server-Side Rendering when necessary, Static Generation when possible, Client-Side Rendering only when required.
+
+---
+
+> 沒有測量的效能問題，不要隨意最佳化。
+> Don't optimize what you haven't measured.
+> — Don't optimize for performance without measurement.
+
+---
+
+> 最好的元件是你根本不必寫的元件。
+> The best component is the one you never have to write.
+> — The best component is the one you don't need to implement.
+
+---
+
+> 以用戶需求決定功能，不是追逐技術潮流。
+> Let user needs drive your features, not technology trends.
+> — User needs define features, not technology fads.
+
+---
+
+## 🎯 Angular 特定極簡開發原則 Angular-Specific Minimalism Principles
+
+> 優先使用 Angular Material，避免自訂 UI 元件。
+> Embrace Angular Material.
+> — Prefer Angular Material components over custom UI elements.
+
+---
+
+> 使用 OnPush 變更檢測策略，提升效能。
+> Use OnPush change detection.
+> — Implement OnPush change detection strategy for better performance.
+
+---
+
+> 避免過度使用 NgRx，優先使用 Angular 服務。
+> Prefer Angular services over NgRx.
+> — Use Angular services for state management, avoid overusing NgRx.
+
+---
+
+> 每個模組職責明確，避免過度分割。
+> Keep modules focused and simple.
+> — Each module should have a clear, single responsibility.
+
+---
+
+> 使用 Lazy Loading 進行程式碼分割。
+> Implement lazy loading for code splitting.
+> — Use lazy loading to split your application into smaller chunks.
+
+---
+
+> 避免建立單次使用的 pipe 或 directive。
+> Avoid single-use pipes and directives.
+> — Don't create pipes or directives that are used only once.
+
+---
+
+> 優先使用 Angular CLI 生成程式碼。
+> Use Angular CLI for code generation.
+> — Leverage Angular CLI to generate consistent, boilerplate code.
+
+---
+
+> 保持元件模板簡潔，複雜邏輯移至 TypeScript。
+> Keep templates simple, move complex logic to TypeScript.
+> — Templates should be declarative, complex logic belongs in the component class.
+
+---
+
+> 使用 TypeScript 嚴格模式，避免 any 型別。
+> Use TypeScript strict mode, avoid any types.
+> — Enable strict TypeScript mode and never use the any type.
+
+---
+
+> 優先使用 Angular 內建管道，避免自訂管道。
+> Prefer built-in Angular pipes.
+> — Use Angular's built-in pipes before creating custom ones.
+
+---
+
+> 使用 Angular 路由守衛進行權限控制。
+> Use Angular route guards for authorization.
+> — Implement route guards for proper authorization and navigation control.
+
+---
+
+> 避免在模板中使用複雜表達式。
+> Avoid complex expressions in templates.
+> — Keep template expressions simple and readable.
+
+---
+
+> 使用 Angular 的依賴注入系統。
+> Leverage Angular's dependency injection.
+> — Use Angular's DI system for better testability and maintainability.
+
+---
+
+> 優先使用 Angular 的響應式表單。
+> Prefer Angular reactive forms.
+> — Use reactive forms for complex form handling and validation.
+
+---
+
+> 避免過度使用 ViewChild 和 ViewChildren。
+> Avoid overusing ViewChild and ViewChildren.
+> — Use ViewChild sparingly, prefer data binding and services.
+
+---
+
+> 使用 Angular 的 HTTP 攔截器進行統一處理。
+> Use Angular HTTP interceptors for common operations.
+> — Implement interceptors for authentication, logging, and error handling.
+
+---
+
+> 優先使用 Angular 的環境配置。
+> Use Angular environment configuration.
+> — Leverage Angular's environment files for different deployment targets.
+
+---
+
+> 避免在元件中直接操作 DOM。
+> Avoid direct DOM manipulation in components.
+> — Use Angular's template binding and directives instead of direct DOM access.
+
+---
+
+> 使用 Angular 的生命週期鉤子適當處理。
+> Use Angular lifecycle hooks appropriately.
+> — Implement lifecycle hooks for proper component initialization and cleanup.
+
+---
+
+> 優先使用 Angular 的結構型指令。
+> Prefer Angular structural directives.
+> — Use *ngIf, *ngFor, and *ngSwitch for conditional rendering and iteration.
+
+---
+
+## 📝 使用說明 Usage Instructions
+
+此檔案包含極簡主義的經典名言和 Angular 19 極簡開發原則，可作為程式碼生成時的指導方針。
+
+### 適用場景：
+- 程式碼生成時的設計原則參考
+- 開發決策的指導方針
+- 程式碼審查的標準依據
+- 團隊開發的文化建立
+
+### 核心精神：
+> "完美不是無可添加，而是無可刪減。"
+> "Perfection is achieved not when there is nothing more to add, but when there is nothing left to take away."
