@@ -3,13 +3,7 @@
     "filesystem": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-filesystem",
-      "D:\\7s\\ac-beta\\.cursor",
-      "D:\\7s\\ac-beta\\.vscode",
-      "D:\\7s\\ac-beta\\custom_modes",
-      "D:\\7s\\ac-beta\\docs",
-      "D:\\7s\\ac-beta\\public",
-      "D:\\7s\\ac-beta\\src",
-      "D:\\7s\\ac-beta\\memory-bank"
+      "D:\\7s\\ng-beta\\"
     ],
       "disabled": false,
       "autoApprove": [
@@ -33,6 +27,14 @@
       ],
       "env": {}
       },
+      "playwright": {
+        "command": "npx",
+        "args": [
+          "@playwright/mcp"
+        ],
+        "env": {}
+      },
+  
       "context7": {
       "command": "npx",
       "args": [
