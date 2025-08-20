@@ -1,1 +1,9 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Generate project structure before commit
+echo "🌳 Generating project structure for AI reference..."
+npm run generate-structure
+
+# Run lint-staged for code formatting
 npx lint-staged
