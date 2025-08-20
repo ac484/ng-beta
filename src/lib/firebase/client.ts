@@ -2,7 +2,7 @@ import { getAuth, connectAuthEmulator } from 'firebase/auth'
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore'
 import { getStorage, connectStorageEmulator } from 'firebase/storage'
 import app from './config'
-import { initializeAppCheckWithRecaptcha } from './app-check'
+import { initializeAppCheckWithRecaptcha, getAppCheckInstance } from './app-check'
 
 // Initialize Firebase services for client
 export const auth = getAuth(app)
@@ -11,6 +11,9 @@ export const storage = getStorage(app)
 
 // Initialize App Check
 export const appCheck = initializeAppCheckWithRecaptcha()
+
+// Helper function to get App Check instance
+export const getAppCheck = () => getAppCheckInstance()
 
 // Connect to emulators in development
 if (process.env.NODE_ENV === 'development') {
