@@ -1,0 +1,173 @@
+{
+  "title": "Next.js Server Actions 遷移指南",
+  "version": "Next.js 14+",
+  "description": "從傳統 API 路由遷移到 Server Actions 的完整指南，包括遷移策略、步驟和最佳實踐",
+  "metadata": {
+    "category": "Migration Guide",
+    "complexity": "Medium",
+    "usage": "API 路由遷移、代碼重構、架構升級、最佳實踐實施",
+    "lastmod": "2025-01-17"
+  },
+  "content": {
+    "migration_overview": {
+      "description": "遷移到 Server Actions 的概述和優勢",
+      "benefits": [
+        "減少 API 路由數量",
+        "更好的類型安全",
+        "漸進式增強",
+        "內建錯誤處理",
+        "更好的開發體驗"
+      ],
+      "considerations": [
+        "Next.js 14+ 版本要求",
+        "現有代碼的兼容性",
+        "團隊的學習曲線",
+        "測試策略的調整"
+      ]
+    },
+    "migration_strategy": {
+      "description": "制定遷移策略和計劃",
+      "approaches": {
+        "gradual_migration": "逐步遷移，一次遷移一個功能",
+        "parallel_implementation": "並行實現，保持舊 API 和新 Server Actions 同時運行",
+        "complete_rewrite": "完全重寫，一次性遷移所有功能"
+      },
+      "recommended_approach": "建議使用逐步遷移策略，先遷移簡單的功能，再遷移複雜的功能",
+      "migration_phases": [
+        "第一階段：簡單的表單提交",
+        "第二階段：數據 CRUD 操作",
+        "第三階段：複雜的業務邏輯",
+        "第四階段：文件上傳和處理",
+        "第五階段：認證和授權",
+        "第六階段：清理和優化"
+      ]
+    },
+    "step_by_step_migration": {
+      "description": "詳細的遷移步驟",
+      "step1_analysis": {
+        "title": "分析現有 API 路由",
+        "description": "識別可以遷移的 API 路由",
+        "actions": [
+          "列出所有現有的 API 路由",
+          "分析每個路由的功能和複雜度",
+          "識別依賴關係和調用方",
+          "評估遷移的優先級"
+        ],
+        "example": "// 現有 API 路由分析\nconst apiRoutes = [\n  { path: '/api/posts', method: 'POST', complexity: 'low', priority: 'high' },\n  { path: '/api/posts/[id]', method: 'PUT', complexity: 'medium', priority: 'high' },\n  { path: '/api/posts/[id]', method: 'DELETE', complexity: 'low', priority: 'medium' },\n  { path: '/api/comments', method: 'POST', complexity: 'low', priority: 'high' },\n  { path: '/api/auth/login', method: 'POST', complexity: 'high', priority: 'low' }\n]"
+      },
+      "step2_planning": {
+        "title": "制定遷移計劃",
+        "description": "為每個 API 路由制定遷移計劃",
+        "actions": [
+          "確定遷移順序",
+          "識別需要修改的客戶端代碼",
+          "計劃測試策略",
+          "準備回滾計劃"
+        ]
+      },
+      "step3_implementation": {
+        "title": "實現 Server Actions",
+        "description": "將 API 路由轉換為 Server Actions",
+        "actions": [
+          "創建 actions.ts 文件",
+          "實現 Server Actions",
+          "添加適當的錯誤處理",
+          "實現數據驗證"
+        ],
+        "example": "// 從 API 路由遷移到 Server Action\n\n// 舊的 API 路由\n// pages/api/posts.ts\nexport default async function handler(req: NextApiRequest, res: NextApiResponse) {\n  if (req.method !== 'POST') {\n    return res.status(405).json({ error: 'Method not allowed' })\n  }\n  \n  try {\n    const { title, content } = req.body\n    \n    if (!title || !content) {\n      return res.status(400).json({ error: 'Title and content are required' })\n    }\n    \n    const post = await db.post.create({\n      data: { title, content, authorId: req.user.id }\n    })\n    \n    res.status(201).json({ success: true, post })\n  } catch (error) {\n    res.status(500).json({ error: 'Internal server error' })\n  }\n}\n\n// 新的 Server Action\n// app/actions/posts.ts\n'use server'\n\nexport async function createPost(formData: FormData) {\n  try {\n    const title = formData.get('title')\n    const content = formData.get('content')\n    \n    if (!title || !content) {\n      throw new Error('Title and content are required')\n    }\n    \n    const sessionId = cookies().get('sessionId')?.value\n    if (!sessionId) {\n      throw new Error('Unauthorized')\n    }\n    \n    const post = await db.post.create({\n      data: {\n        title: title.toString(),\n        content: content.toString(),\n        authorId: sessionId\n      }\n    })\n    \n    revalidatePath('/posts')\n    \n    return { success: true, post }\n  } catch (error) {\n    return {\n      success: false,\n      error: error instanceof Error ? error.message : 'Internal server error'\n    }\n  }\n}"
+      },
+      "step4_client_update": {
+        "title": "更新客戶端代碼",
+        "description": "修改客戶端代碼以使用 Server Actions",
+        "actions": [
+          "更新表單的 action 屬性",
+          "修改事件處理函數",
+          "更新錯誤處理邏輯",
+          "調整 UI 響應"
+        ],
+        "example": "// 從 fetch 遷移到 Server Actions\n\n// 舊的客戶端代碼\nconst handleSubmit = async (e: React.FormEvent) => {\n  e.preventDefault()\n  \n  try {\n    const response = await fetch('/api/posts', {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify({ title, content })\n    })\n    \n    if (!response.ok) {\n      throw new Error('Failed to create post')\n    }\n    \n    const result = await response.json()\n    // 處理成功響應\n  } catch (error) {\n    // 處理錯誤\n  }\n}\n\n// 新的客戶端代碼\nimport { createPost } from '@/app/actions/posts'\n\nconst handleSubmit = async (formData: FormData) => {\n  try {\n    const result = await createPost(formData)\n    \n    if (result.success) {\n      // 處理成功響應\n    } else {\n      // 處理錯誤\n    }\n  } catch (error) {\n    // 處理錯誤\n  }\n}\n\n// 或者直接使用表單 action\n<form action={createPost}>\n  <input name='title' value={title} onChange={(e) => setTitle(e.target.value)} />\n  <textarea name='content' value={content} onChange={(e) => setContent(e.target.value)} />\n  <button type='submit'>Create Post</button>\n</form>"
+      },
+      "step5_testing": {
+        "title": "測試遷移後的功能",
+        "description": "確保遷移後的功能正常工作",
+        "actions": [
+          "編寫單元測試",
+          "進行集成測試",
+          "測試錯誤情況",
+          "驗證性能表現"
+        ]
+      },
+      "step6_cleanup": {
+        "title": "清理舊代碼",
+        "description": "移除不再需要的舊 API 路由",
+        "actions": [
+          "確認所有功能都正常工作",
+          "移除舊的 API 路由文件",
+          "清理相關的測試代碼",
+          "更新文檔"
+        ]
+      }
+    },
+    "common_migration_patterns": {
+      "description": "常見的遷移模式和轉換",
+      "patterns": {
+        "form_submission": "表單提交的遷移模式",
+        "data_operations": "數據操作的遷移模式",
+        "file_upload": "文件上傳的遷移模式",
+        "authentication": "認證邏輯的遷移模式"
+      },
+      "examples": {
+        "form_submission": "// 舊的 API 路由處理表單提交\n// 新的 Server Action 直接處理 FormData",
+        "data_operations": "// 舊的 API 路由使用 req.body\n// 新的 Server Action 使用 FormData 或參數",
+        "file_upload": "// 舊的 API 路由處理 multipart/form-data\n// 新的 Server Action 直接處理 File 對象",
+        "authentication": "// 舊的 API 路由使用 req.headers 或 req.cookies\n// 新的 Server Action 使用 cookies() 和 headers()"
+      }
+    },
+    "migration_challenges": {
+      "description": "遷移過程中可能遇到的挑戰和解決方案",
+      "challenges": {
+        "complex_validation": "複雜驗證邏輯的遷移",
+        "middleware_dependencies": "中間件依賴的處理",
+        "third_party_integrations": "第三方服務集成的遷移",
+        "performance_optimization": "性能優化的考慮"
+      },
+      "solutions": {
+        "complex_validation": "使用 Zod 等驗證庫重構驗證邏輯",
+        "middleware_dependencies": "將中間件邏輯移到 Server Actions 內部",
+        "third_party_integrations": "保持第三方服務的調用邏輯，只改變調用方式",
+        "performance_optimization": "使用 Next.js 的緩存機制和優化功能"
+      }
+    },
+    "migration_checklist": {
+      "description": "遷移完成的檢查清單",
+      "items": [
+        "所有功能都正常工作",
+        "錯誤處理正確實現",
+        "數據驗證完整",
+        "權限檢查正確",
+        "緩存策略適當",
+        "測試覆蓋率足夠",
+        "文檔已更新",
+        "舊代碼已清理",
+        "性能表現良好",
+        "安全檢查通過"
+      ]
+    }
+  },
+  "best_practices": [
+    "制定詳細的遷移計劃",
+    "逐步遷移，避免一次性大改動",
+    "保持舊 API 和新 Server Actions 並行運行",
+    "充分測試每個遷移的功能",
+    "準備回滾計劃",
+    "記錄遷移過程和決策",
+    "培訓團隊使用新的開發模式",
+    "監控遷移後的性能表現"
+  ],
+  "migration_tools": {
+    "code_analysis": "使用工具分析現有代碼結構",
+    "automated_testing": "自動化測試確保功能正確性",
+    "performance_monitoring": "監控遷移後的性能表現",
+    "error_tracking": "追蹤和分析錯誤"
+  }
+}
