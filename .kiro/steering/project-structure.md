@@ -1,6 +1,6 @@
 # Project Structure
 
-> **Auto-generated on:** 2025-08-20T10:22:57.091Z  
+> **Auto-generated on:** 2025-08-20T14:16:24.256Z  
 > **Purpose:** AI code generation reference - shows relevant project structure for development
 
 ## Directory Tree
@@ -16,22 +16,118 @@
 │   ├── app/
 │   │   ├── (auth)/
 │   │   │   ├── sign-in/
-│   │   │   └── sign-up/
+│   │   │   │   └── [[...sign-in]]/
+│   │   │   │       └── page.tsx
+│   │   │   ├── sign-up/
+│   │   │   │   └── [[...sign-up]]/
+│   │   │   │       └── page.tsx
+│   │   │   └── layout.tsx
 │   │   ├── (dashboard)/
 │   │   │   ├── @analytics/
+│   │   │   │   ├── default.tsx
+│   │   │   │   ├── error.tsx
+│   │   │   │   ├── loading.tsx
+│   │   │   │   └── page.tsx
 │   │   │   ├── @documents/
+│   │   │   │   ├── library/
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── default.tsx
+│   │   │   │   ├── error.tsx
+│   │   │   │   ├── loading.tsx
+│   │   │   │   └── page.tsx
 │   │   │   ├── @partners/
-│   │   │   └── @portfolio/
+│   │   │   │   ├── directory/
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── default.tsx
+│   │   │   │   ├── error.tsx
+│   │   │   │   ├── loading.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── @portfolio/
+│   │   │   │   ├── projects/
+│   │   │   │   │   └── page.tsx
+│   │   │   │   ├── default.tsx
+│   │   │   │   ├── error.tsx
+│   │   │   │   ├── loading.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── layout.tsx
+│   │   │   └── page.tsx
+│   │   ├── global-error.tsx
 │   │   ├── globals.css
 │   │   ├── layout.tsx
+│   │   ├── not-found.tsx
 │   │   └── page.tsx
 │   ├── components/
 │   │   ├── documents/
 │   │   ├── layout/
+│   │   │   ├── app-sidebar.tsx
+│   │   │   ├── header.tsx
+│   │   │   └── page-container.tsx
 │   │   ├── partners/
 │   │   ├── shared/
-│   │   └── ui/
+│   │   │   ├── error-boundary.tsx
+│   │   │   └── module-error-fallback.tsx
+│   │   ├── ui/
+│   │   │   ├── table/
+│   │   │   │   ├── data-table-column-header.tsx
+│   │   │   │   ├── data-table-date-filter.tsx
+│   │   │   │   ├── data-table-faceted-filter.tsx
+│   │   │   │   ├── data-table-pagination.tsx
+│   │   │   │   ├── data-table-skeleton.tsx
+│   │   │   │   ├── data-table-slider-filter.tsx
+│   │   │   │   ├── data-table-toolbar.tsx
+│   │   │   │   ├── data-table-view-options.tsx
+│   │   │   │   └── data-table.tsx
+│   │   │   ├── accordion.tsx
+│   │   │   ├── alert-dialog.tsx
+│   │   │   ├── alert.tsx
+│   │   │   ├── aspect-ratio.tsx
+│   │   │   ├── avatar.tsx
+│   │   │   ├── badge.tsx
+│   │   │   ├── breadcrumb.tsx
+│   │   │   ├── button.tsx
+│   │   │   ├── calendar.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── chart.tsx
+│   │   │   ├── checkbox.tsx
+│   │   │   ├── collapsible.tsx
+│   │   │   ├── command.tsx
+│   │   │   ├── context-menu.tsx
+│   │   │   ├── dialog.tsx
+│   │   │   ├── drawer.tsx
+│   │   │   ├── dropdown-menu.tsx
+│   │   │   ├── form.tsx
+│   │   │   ├── heading.tsx
+│   │   │   ├── hover-card.tsx
+│   │   │   ├── input-otp.tsx
+│   │   │   ├── input.tsx
+│   │   │   ├── label.tsx
+│   │   │   ├── menubar.tsx
+│   │   │   ├── modal.tsx
+│   │   │   ├── navigation-menu.tsx
+│   │   │   ├── pagination.tsx
+│   │   │   ├── popover.tsx
+│   │   │   ├── progress.tsx
+│   │   │   ├── radio-group.tsx
+│   │   │   ├── resizable.tsx
+│   │   │   ├── scroll-area.tsx
+│   │   │   ├── select.tsx
+│   │   │   ├── separator.tsx
+│   │   │   ├── sheet.tsx
+│   │   │   ├── sidebar.tsx
+│   │   │   ├── skeleton.tsx
+│   │   │   ├── slider.tsx
+│   │   │   ├── sonner.tsx
+│   │   │   ├── switch.tsx
+│   │   │   ├── table.tsx
+│   │   │   ├── tabs.tsx
+│   │   │   ├── textarea.tsx
+│   │   │   ├── toggle-group.tsx
+│   │   │   ├── toggle.tsx
+│   │   │   └── tooltip.tsx
+│   │   ├── icons.tsx
+│   │   └── providers.tsx
 │   ├── config/
+│   │   └── data-table.ts
 │   ├── constants/
 │   ├── hooks/
 │   ├── lib/
@@ -45,8 +141,18 @@
 │   │   │   └── supabase-service.ts
 │   │   ├── ai/
 │   │   │   ├── services/
+│   │   │   │   ├── contracts-ai.ts
+│   │   │   │   ├── document-ai.ts
+│   │   │   │   ├── partner-ai.ts
+│   │   │   │   ├── projects-ai.ts
+│   │   │   │   └── unified-ai-service.ts
 │   │   │   ├── types/
+│   │   │   │   └── ai.types.ts
 │   │   │   ├── flows/
+│   │   │   │   ├── document-analysis.ts
+│   │   │   │   ├── generate-subtasks-flow.ts
+│   │   │   │   ├── partner-suggestions.ts
+│   │   │   │   └── summarize-contract.ts
 │   │   │   └── genkit.ts
 │   │   ├── auth/
 │   │   │   ├── clerk.ts
@@ -64,20 +170,30 @@
 │   │   │   ├── client.ts
 │   │   │   ├── server.ts
 │   │   │   └── types.ts
-│   │   └── validations/
+│   │   ├── validations/
+│   │   ├── data-table.ts
+│   │   ├── design-tokens.ts
+│   │   ├── error-reporting.ts
+│   │   ├── format.ts
+│   │   ├── parsers.ts
+│   │   ├── theme.ts
+│   │   └── utils.ts
 │   ├── types/
-│   └── features/
-│       ├── documents/
-│       │   ├── components/
-│       │   ├── hooks/
-│       │   ├── services/
-│       │   └── types/
-│       ├── partners/
-│       │   ├── components/
-│       │   ├── hooks/
-│       │   ├── services/
-│       │   └── types/
-│       └── shared/
+│   │   ├── data-table.ts
+│   │   └── index.ts
+│   ├── features/
+│   │   ├── documents/
+│   │   │   ├── components/
+│   │   │   ├── hooks/
+│   │   │   ├── services/
+│   │   │   └── types/
+│   │   ├── partners/
+│   │   │   ├── components/
+│   │   │   ├── hooks/
+│   │   │   ├── services/
+│   │   │   └── types/
+│   │   └── shared/
+│   └── middleware.ts
 ├── custom_modes/
 │   ├── creative_instructions.md
 │   ├── implement_instructions.md
@@ -97,17 +213,17 @@
 │   │   ├── parallel-routes-troubleshooting.json
 │   │   └── README.md
 │   ├── Partial Prerendering/
-│   │   ├── advanced-patterns-and-use-cases.json
-│   │   ├── api-reference-and-configuration.json
-│   │   ├── configuration-and-setup.json
-│   │   ├── documentation-index.json
-│   │   ├── dynamic-apis-and-data-fetching.json
-│   │   ├── implementation-examples.json
-│   │   ├── nextjs-partial-prerendering-overview.json
-│   │   ├── performance-and-optimization.json
-│   │   ├── react-suspense-integration.json
+│   │   ├── advanced-patterns-and-use-cases.md
+│   │   ├── api-reference-and-configuration.md
+│   │   ├── configuration-and-setup.md
+│   │   ├── documentation-index.md
+│   │   ├── dynamic-apis-and-data-fetching.md
+│   │   ├── implementation-examples.md
+│   │   ├── nextjs-partial-prerendering-overview.md
+│   │   ├── performance-and-optimization.md
+│   │   ├── react-suspense-integration.md
 │   │   ├── README.md
-│   │   └── troubleshooting-and-debugging.json
+│   │   └── troubleshooting-and-debugging.md
 │   ├── scripts/
 │   │   ├── auto-structure-generation.md
 │   │   └── commit-structure-solution.md
@@ -176,8 +292,8 @@
 ├── Implementation.md
 ├── MEMORY_BANK_OPTIMIZATIONS.md
 ├── memory_bank_upgrade_guide.md
+├── next-env.d.ts
 ├── next.config.ts
-├── package copy.json
 ├── package.json
 ├── pnpm-lock.yaml
 ├── postcss.config.js
