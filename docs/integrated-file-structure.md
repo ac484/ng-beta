@@ -144,63 +144,12 @@ src/
 │   │   ├── page.tsx              # 儀表板首頁
 │   │   ├── loading.tsx           # 載入狀態
 │   │   └── error.tsx             # 錯誤處理
-│   ├── api/                      # Route Handlers
-│   │   ├── auth/
-│   │   │   ├── callback/
-│   │   │   │   └── route.ts
-│   │   │   └── webhook/
-│   │   │       └── route.ts
-│   │   ├── portfolio/
-│   │   │   ├── projects/
-│   │   │   │   ├── route.ts
-│   │   │   │   └── [id]/
-│   │   │   │       └── route.ts
-│   │   │   ├── tasks/
-│   │   │   │   ├── route.ts
-│   │   │   │   └── [id]/
-│   │   │   │       └── route.ts
-│   │   │   └── contracts/
-│   │   │       ├── route.ts
-│   │   │       └── [id]/
-│   │   │           └── route.ts
-│   │   ├── partners/
-│   │   │   ├── directory/
-│   │   │   │   ├── route.ts
-│   │   │   │   └── [id]/
-│   │   │   │       └── route.ts
-│   │   │   ├── relationships/
-│   │   │   │   ├── route.ts
-│   │   │   │   └── [id]/
-│   │   │   │       └── route.ts
-│   │   │   └── collaborations/
-│   │   │       ├── route.ts
-│   │   │       └── [id]/
-│   │   │           └── route.ts
-│   │   ├── documents/
-│   │   │   ├── upload/
-│   │   │   │   └── route.ts
-│   │   │   ├── parse/
-│   │   │   │   ├── route.ts
-│   │   │   │   └── [id]/
-│   │   │   │       └── route.ts
-│   │   │   └── ai-summary/
-│   │   │       ├── route.ts
-│   │   │       └── [id]/
-│   │   │           └── route.ts
-│   │   ├── ai/
-│   │   │   ├── genkit/
-│   │   │   │   └── route.ts
-│   │   │   ├── subtasks/
-│   │   │   │   └── route.ts
-│   │   │   ├── summarize/
-│   │   │   │   └── route.ts
-│   │   │   └── insights/
-│   │   │       └── route.ts
-│   │   └── analytics/
-│   │       ├── overview/
-│   │       │   └── route.ts
-│   │       └── reports/
-│   │           └── route.ts
+│   ├── actions/                  # Server Actions
+│   │   ├── auth-actions.ts
+│   │   ├── portfolio-actions.ts
+│   │   ├── partners-actions.ts
+│   │   ├── documents-actions.ts
+│   │   └── analytics-actions.ts
 │   ├── globals.css               # 全域樣式
 │   ├── layout.tsx                # 根佈局
 │   ├── page.tsx                  # 首頁
@@ -513,11 +462,21 @@ src/
 │   │   ├── clerk.ts
 │   │   ├── permissions.ts
 │   │   └── middleware.ts
-│   ├── database/
-│   │   ├── firebase.ts
+│   ├── firebase/
+│   │   ├── config.ts
 │   │   ├── collections.ts
-│   │   ├── queries.ts
 │   │   └── migrations.ts
+│   ├── services/
+│   │   ├── firebase-service.ts
+│   │   ├── project-service.ts
+│   │   ├── partner-service.ts
+│   │   ├── document-service.ts
+│   │   └── analytics-service.ts
+│   ├── queries/
+│   │   ├── portfolio-queries.ts
+│   │   ├── partners-queries.ts
+│   │   ├── documents-queries.ts
+│   │   └── analytics-queries.ts
 │   ├── validations/
 │   │   ├── auth.schemas.ts
 │   │   ├── portfolio.schemas.ts

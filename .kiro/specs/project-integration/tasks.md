@@ -98,35 +98,41 @@
   - 建立資料一致性檢查和衝突解決機制
   - _需求: 6.2, 6.3, 6.5_
 
-- [ ] 5. 實作 Route Handlers API
-  - 建立 Next.js 15 Route Handlers 取代傳統 API Routes
-  - 實作各模組的 CRUD API 端點和業務邏輯
-  - 整合資料驗證、錯誤處理和回應格式標準化
+- [ ] 5. 實作 Server Actions 和資料層
+  - 建立 Next.js 15 Server Actions 取代傳統 API Routes
+  - 整合 TanStack Query 進行客戶端狀態管理
+  - 建立 Firebase 服務層和資料存取邏輯
   - _需求: 3.1, 4.1, 5.1, 6.1, 10.1, 11.2_
 
-- [ ] 5.1 建立 API 基礎架構
-  - 建立 Route Handlers 的基礎類別和工具函數
-  - 實作統一的錯誤處理和回應格式
-  - 建立 API 文件自動生成機制
-  - _需求: 10.1, 11.2_
+- [ ] 5.1 建立 Firebase 服務基礎架構
+  - 配置 Firebase v9+ 模組化 SDK
+  - 建立統一的 Firebase 服務基礎類別
+  - 設定開發環境模擬器連接
+  - _需求: 6.1, 10.3_
 
-- [ ] 5.2 實作 Portfolio API 端點
-  - 建立專案、任務、合約的 CRUD API
-  - 實作專案進度計算和統計 API
-  - 整合 AI 子任務建議 API 端點
+- [ ] 5.2 實作 Portfolio Server Actions
+  - 建立專案、任務、合約的 Server Actions
+  - 實作資料驗證和權限檢查
+  - 整合 revalidateTag 和 revalidatePath 進行快取管理
   - _需求: 3.1, 3.2, 3.3, 3.4, 3.5_
 
-- [ ] 5.3 實作 Partners API 端點
-  - 建立夥伴、關係、協作的 CRUD API
-  - 實作夥伴搜尋和篩選 API
-  - 建立夥伴網絡分析 API 端點
+- [ ] 5.3 實作 Partners Server Actions
+  - 建立夥伴、關係、協作的 Server Actions
+  - 實作夥伴搜尋和篩選邏輯
+  - 建立夥伴網絡分析功能
   - _需求: 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [ ] 5.4 實作 Documents API 端點
-  - 建立文件上傳、解析、管理的 API
-  - 實作 AI 文件摘要和關鍵字提取 API
-  - 建立文件搜尋和關聯 API 端點
+- [ ] 5.4 實作 Documents Server Actions
+  - 建立文件上傳、解析、管理的 Server Actions
+  - 整合 Firebase Storage 進行檔案管理
+  - 實作文件搜尋和關聯邏輯
   - _需求: 5.1, 5.2, 5.3, 5.4, 5.5_
+
+- [ ] 5.5 整合 TanStack Query
+  - 設定 QueryClient 和 QueryClientProvider
+  - 建立各模組的 Query 和 Mutation hooks
+  - 實作樂觀更新和錯誤處理
+  - _需求: 6.2, 6.3, 9.3_
 
 - [ ] 6. 整合 AI 功能服務
   - 整合 Google Genkit AI 服務，建立統一的 AI 功能介面

@@ -17,8 +17,9 @@ inclusion: always
 ### Next.js 15 App Router 規範
 - **必須使用** Next.js 15 App Router，不得使用 Pages Router
 - **必須使用** 平行路由 (Parallel Routes) 進行模組分離
-- **必須使用** Route Handlers 取代 API Routes
+- **必須使用** Server Actions 進行資料變更，不使用 API Routes
 - **必須使用** Server Components 作為預設，僅在需要時使用 Client Components
+- **必須使用** TanStack Query 進行客戶端狀態管理
 
 ### 平行路由結構規範
 ```typescript
@@ -126,41 +127,84 @@ export const useStore = create<StoreState & StoreActions>((set, get) => ({
 ```
 
 ### 資料流規範
-- 使用 Zustand 進行全域狀態管理
+- 使用 TanStack Query 進行伺服器狀態管理
+- 使用 Zustand 進行客戶端全域狀態管理
 - 使用 React Context 進行局部狀態共享
 - 使用 React Hook Form 進行表單狀態管理
-- 使用 SWR 或 TanStack Query 進行伺服器狀態管理
 
-## API 開發標準
+## Server Actions 開發標準
 
-### Route Handlers 規範
+### Server Actions 規範
 ```typescript
-// 標準 Route Handler 結構
-export async function GET(request: Request) {
+// 標準 Server Action 結構
+'use server'
+
+import { auth } from '@clerk/nextjs'
+import { revalidatePath, revalidateTag } from 'next/cache'
+
+export async function createEntity(formData: FormData) {
+  const { userId } = auth()
+  
+  if (!userId) {
+    throw new Error('Unauthorized')
+  }
+
   try {
-    // 業務邏輯
-    return Response.json(data)
+    const rawData = {
+      field1: formData.get('field1') as string,
+      field2: formData.get('field2') as string,
+    }
+
+    const validatedData = entitySchema.parse(rawData)
+    const result = await entityService.create(validatedData)
+
+    revalidateTag('entities')
+    revalidatePath('/dashboard')
+    
+    return { success: true, data: result }
   } catch (error) {
-    return Response.json({ error: 'Error message' }, { status: 500 })
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }
   }
 }
+```
 
-export async function POST(request: Request) {
-  try {
-    const body = await request.json()
-    // 驗證和處理
-    return Response.json(result)
-  } catch (error) {
-    return Response.json({ error: 'Error message' }, { status: 400 })
-  }
+### TanStack Query 整合規範
+```typescript
+// 標準 Query Hook 結構
+export function useEntities() {
+  const { userId } = useAuth()
+  
+  return useQuery({
+    queryKey: ['entities', userId],
+    queryFn: () => entityService.getAll(userId!),
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
+// 標準 Mutation Hook 結構
+export function useCreateEntity() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: createEntity,
+    onSuccess: (data) => {
+      if (data.success) {
+        queryClient.invalidateQueries({ queryKey: ['entities'] })
+      }
+    },
+  })
 }
 ```
 
 ### 資料驗證規範
 - **必須使用** Zod 進行資料驗證
-- **必須驗證** 所有輸入資料
-- **必須處理** 錯誤情況
-- **必須返回** 適當的 HTTP 狀態碼
+- **必須驗證** 所有 Server Action 輸入資料
+- **必須處理** 錯誤情況並返回結構化回應
+- **必須使用** revalidateTag 和 revalidatePath 管理快取
 
 ## 資料庫整合標準
 

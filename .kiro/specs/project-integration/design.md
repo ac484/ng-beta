@@ -556,99 +556,350 @@ class DataSyncService {
 }
 ```
 
-## API 設計
+## 資料處理設計
 
-### Route Handlers 架構
+### Server Actions 架構
+
+基於 Next.js 15 的最佳實踐，我們使用 Server Actions 取代傳統的 API Routes：
 
 ```typescript
-// 標準 API 回應格式
-interface APIResponse<T = any> {
-  success: boolean
-  data?: T
-  error?: string
-  message?: string
-  pagination?: PaginationInfo
-}
+// lib/actions/portfolio-actions.ts
+'use server'
 
-// 標準錯誤處理
-class APIError extends Error {
-  constructor(
-    message: string,
-    public statusCode: number = 500,
-    public code?: string
-  ) {
-    super(message)
+import { auth } from '@clerk/nextjs'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { redirect } from 'next/navigation'
+import { projectService } from '@/lib/services/project-service'
+import { projectCreateSchema } from '@/lib/validations/portfolio.schemas'
+
+export async function createProject(formData: FormData) {
+  const { userId } = auth()
+  
+  if (!userId) {
+    throw new Error('Unauthorized')
+  }
+
+  try {
+    const rawData = {
+      title: formData.get('title') as string,
+      description: formData.get('description') as string,
+      priority: formData.get('priority') as string,
+    }
+
+    const validatedData = projectCreateSchema.parse(rawData)
+    
+    const project = await projectService.createProject({
+      ...validatedData,
+      createdBy: userId
+    })
+
+    revalidateTag('projects')
+    revalidatePath('/dashboard/portfolio')
+    
+    return { success: true, data: project }
+  } catch (error) {
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }
   }
 }
 
-// API 處理器基類
-abstract class BaseHandler {
-  protected async handleRequest<T>(
-    request: Request,
-    handler: () => Promise<T>
-  ): Promise<Response> {
-    try {
-      const result = await handler()
-      return Response.json({
-        success: true,
-        data: result
-      })
-    } catch (error) {
-      if (error instanceof APIError) {
-        return Response.json(
-          {
-            success: false,
-            error: error.message,
-            code: error.code
-          },
-          { status: error.statusCode }
-        )
-      }
-      
-      return Response.json(
-        {
-          success: false,
-          error: 'Internal Server Error'
-        },
-        { status: 500 }
-      )
+export async function updateProject(projectId: string, formData: FormData) {
+  const { userId } = auth()
+  
+  if (!userId) {
+    throw new Error('Unauthorized')
+  }
+
+  try {
+    const rawData = {
+      title: formData.get('title') as string,
+      description: formData.get('description') as string,
+      status: formData.get('status') as string,
+    }
+
+    const project = await projectService.updateProject(projectId, rawData, userId)
+
+    revalidateTag('projects')
+    revalidateTag(`project-${projectId}`)
+    
+    return { success: true, data: project }
+  } catch (error) {
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    }
+  }
+}
+
+export async function deleteProject(projectId: string) {
+  const { userId } = auth()
+  
+  if (!userId) {
+    throw new Error('Unauthorized')
+  }
+
+  try {
+    await projectService.deleteProject(projectId, userId)
+    
+    revalidateTag('projects')
+    revalidatePath('/dashboard/portfolio')
+    
+    return { success: true }
+  } catch (error) {
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
     }
   }
 }
 ```
 
-### API 端點設計
+### TanStack Query 整合
+
+使用 @tanstack/react-query 進行客戶端狀態管理和 Firebase 整合：
 
 ```typescript
-// 專案 API 範例
-// app/api/portfolio/projects/route.ts
-export async function GET(request: Request) {
-  return new ProjectHandler().handleRequest(request, async () => {
-    const { searchParams } = new URL(request.url)
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '10')
-    const search = searchParams.get('search')
-    
-    return await projectService.getProjects({
-      page,
-      limit,
-      search,
-      userId: auth.userId
-    })
+// lib/queries/portfolio-queries.ts
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useAuth } from '@clerk/nextjs'
+import { projectService } from '@/lib/services/project-service'
+import { createProject, updateProject, deleteProject } from '@/lib/actions/portfolio-actions'
+
+export function useProjects() {
+  const { userId } = useAuth()
+  
+  return useQuery({
+    queryKey: ['projects', userId],
+    queryFn: () => projectService.getProjects(userId!),
+    enabled: !!userId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   })
 }
 
-export async function POST(request: Request) {
-  return new ProjectHandler().handleRequest(request, async () => {
-    const body = await request.json()
-    const validatedData = projectCreateSchema.parse(body)
-    
-    return await projectService.createProject({
-      ...validatedData,
-      createdBy: auth.userId
-    })
+export function useProject(projectId: string) {
+  const { userId } = useAuth()
+  
+  return useQuery({
+    queryKey: ['project', projectId],
+    queryFn: () => projectService.getProject(projectId, userId!),
+    enabled: !!userId && !!projectId,
+    staleTime: 5 * 60 * 1000,
   })
 }
+
+export function useCreateProject() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: createProject,
+    onSuccess: (data) => {
+      if (data.success) {
+        queryClient.invalidateQueries({ queryKey: ['projects'] })
+      }
+    },
+  })
+}
+
+export function useUpdateProject() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: ({ projectId, formData }: { projectId: string; formData: FormData }) =>
+      updateProject(projectId, formData),
+    onSuccess: (data, variables) => {
+      if (data.success) {
+        queryClient.invalidateQueries({ queryKey: ['projects'] })
+        queryClient.invalidateQueries({ queryKey: ['project', variables.projectId] })
+      }
+    },
+  })
+}
+
+export function useDeleteProject() {
+  const queryClient = useQueryClient()
+  
+  return useMutation({
+    mutationFn: deleteProject,
+    onSuccess: (data) => {
+      if (data.success) {
+        queryClient.invalidateQueries({ queryKey: ['projects'] })
+      }
+    },
+  })
+}
+```
+
+### Firebase 整合設計
+
+使用 Firebase v9+ 的模組化 SDK 和 TanStack Query Firebase：
+
+```typescript
+// lib/firebase/config.ts
+import { initializeApp } from 'firebase/app'
+import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore'
+import { getAuth, connectAuthEmulator } from 'firebase/auth'
+import { getStorage, connectStorageEmulator } from 'firebase/storage'
+
+const firebaseConfig = {
+  // Firebase 配置
+}
+
+export const app = initializeApp(firebaseConfig)
+export const db = getFirestore(app)
+export const auth = getAuth(app)
+export const storage = getStorage(app)
+
+// 開發環境連接模擬器
+if (process.env.NODE_ENV === 'development') {
+  if (!globalThis.__FIREBASE_EMULATOR_CONNECTED) {
+    connectFirestoreEmulator(db, 'localhost', 8080)
+    connectAuthEmulator(auth, 'http://localhost:9099')
+    connectStorageEmulator(storage, 'localhost', 9199)
+    globalThis.__FIREBASE_EMULATOR_CONNECTED = true
+  }
+}
+
+// lib/services/firebase-service.ts
+import { 
+  collection, 
+  doc, 
+  getDocs, 
+  getDoc, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy, 
+  limit,
+  Timestamp 
+} from 'firebase/firestore'
+import { db } from '@/lib/firebase/config'
+
+export class FirebaseService {
+  async create<T>(collectionName: string, data: Omit<T, 'id' | 'createdAt' | 'updatedAt'>) {
+    const now = Timestamp.now()
+    const docRef = await addDoc(collection(db, collectionName), {
+      ...data,
+      createdAt: now,
+      updatedAt: now,
+    })
+    return { id: docRef.id, ...data, createdAt: now, updatedAt: now }
+  }
+
+  async read<T>(collectionName: string, id: string): Promise<T | null> {
+    const docRef = doc(db, collectionName, id)
+    const docSnap = await getDoc(docRef)
+    
+    if (docSnap.exists()) {
+      return { id: docSnap.id, ...docSnap.data() } as T
+    }
+    return null
+  }
+
+  async update<T>(collectionName: string, id: string, data: Partial<T>) {
+    const docRef = doc(db, collectionName, id)
+    const updateData = {
+      ...data,
+      updatedAt: Timestamp.now(),
+    }
+    await updateDoc(docRef, updateData)
+    return updateData
+  }
+
+  async delete(collectionName: string, id: string) {
+    const docRef = doc(db, collectionName, id)
+    await deleteDoc(docRef)
+  }
+
+  async list<T>(
+    collectionName: string, 
+    constraints: {
+      where?: [string, any, any][]
+      orderBy?: [string, 'asc' | 'desc'][]
+      limit?: number
+    } = {}
+  ): Promise<T[]> {
+    let q = collection(db, collectionName)
+    
+    if (constraints.where) {
+      constraints.where.forEach(([field, operator, value]) => {
+        q = query(q, where(field, operator, value))
+      })
+    }
+    
+    if (constraints.orderBy) {
+      constraints.orderBy.forEach(([field, direction]) => {
+        q = query(q, orderBy(field, direction))
+      })
+    }
+    
+    if (constraints.limit) {
+      q = query(q, limit(constraints.limit))
+    }
+    
+    const querySnapshot = await getDocs(q)
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as T[]
+  }
+}
+
+// lib/services/project-service.ts
+import { FirebaseService } from './firebase-service'
+import { Project, CreateProjectData } from '@/types/portfolio.types'
+
+export class ProjectService extends FirebaseService {
+  private collectionName = 'projects'
+
+  async createProject(data: CreateProjectData): Promise<Project> {
+    return this.create<Project>(this.collectionName, data)
+  }
+
+  async getProject(id: string, userId: string): Promise<Project | null> {
+    const project = await this.read<Project>(this.collectionName, id)
+    
+    // 檢查權限
+    if (project && project.createdBy !== userId) {
+      throw new Error('Unauthorized')
+    }
+    
+    return project
+  }
+
+  async getProjects(userId: string): Promise<Project[]> {
+    return this.list<Project>(this.collectionName, {
+      where: [['createdBy', '==', userId]],
+      orderBy: [['updatedAt', 'desc']],
+    })
+  }
+
+  async updateProject(id: string, data: Partial<Project>, userId: string): Promise<Project> {
+    // 先檢查權限
+    const existingProject = await this.getProject(id, userId)
+    if (!existingProject) {
+      throw new Error('Project not found or unauthorized')
+    }
+
+    await this.update(this.collectionName, id, data)
+    return { ...existingProject, ...data } as Project
+  }
+
+  async deleteProject(id: string, userId: string): Promise<void> {
+    // 先檢查權限
+    const existingProject = await this.getProject(id, userId)
+    if (!existingProject) {
+      throw new Error('Project not found or unauthorized')
+    }
+
+    await this.delete(this.collectionName, id)
+  }
+}
+
+export const projectService = new ProjectService()
 ```
 
 ## 效能最佳化設計

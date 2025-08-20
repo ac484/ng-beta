@@ -52,8 +52,9 @@
 
 ## 技術架構亮點
 
-### 🚀 Next.js 15 App Router 平行路由
-- **創新設計**: 使用 `@portfolio`、`@partners`、`@documents`、`@analytics` 平行路由槽
+### 🚀 Next.js 15 App Router 現代化架構
+- **平行路由設計**: 使用 `@portfolio`、`@partners`、`@documents`、`@analytics` 平行路由槽
+- **Server Actions**: 採用 Next.js 15 推薦的 Server Actions 取代 API Routes
 - **獨立運作**: 各模組可獨立載入、錯誤處理、狀態管理
 - **統一整合**: 在同一佈局中同時渲染多個模組
 
@@ -66,6 +67,12 @@
 - **統一服務**: Google Genkit 提供跨模組的 AI 功能
 - **智慧協作**: AI 能夠整合多模組資料提供更好的建議
 - **擴展性**: 易於添加新的 AI 功能和流程
+
+### 📊 TanStack Query 狀態管理
+- **伺服器狀態**: 使用 @tanstack/react-query 管理所有伺服器狀態
+- **Firebase 整合**: 結合 @tanstack-query-firebase 簡化 Firebase 操作
+- **樂觀更新**: 提供流暢的使用者體驗
+- **快取管理**: 智慧快取和自動重新驗證
 
 ### 🔐 現代認證系統
 - **Clerk 整合**: 現代化的認證和使用者管理
@@ -114,17 +121,18 @@
 
 ## 技術創新點
 
-### 🌟 平行路由的創新應用
-這是 Next.js 15 平行路由在複雜業務場景中的創新應用，實現了：
-- 多模組同時渲染而不互相干擾
-- 獨立的錯誤處理和載入狀態
-- 靈活的權限控制和條件渲染
+### 🌟 Next.js 15 現代化架構
+採用 Next.js 15 的最新最佳實踐：
+- **Server Actions**: 取代傳統 API Routes，提供更好的類型安全和效能
+- **平行路由**: 複雜業務場景中的創新應用，實現多模組同時渲染
+- **Server Components**: 最大化伺服器端渲染，減少客戶端 JavaScript
 
-### 🔄 跨模組資料整合
-創新的資料同步機制：
-- 即時的跨模組資料關聯
-- 統一的狀態管理和資料流
-- 智慧的快取和最佳化策略
+### 🔄 TanStack Query + Firebase 整合
+現代化的資料管理策略：
+- **統一狀態管理**: TanStack Query 管理所有伺服器狀態
+- **Firebase v9+**: 使用最新的模組化 SDK
+- **樂觀更新**: 提供即時的使用者回饋
+- **智慧快取**: 自動失效和重新驗證機制
 
 ### 🧠 AI 驅動的整合
 AI 功能的深度整合：
