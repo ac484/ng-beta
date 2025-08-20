@@ -1,6 +1,6 @@
 # Project Structure
 
-> **Auto-generated on:** 2025-08-20T14:18:55.416Z  
+> **Auto-generated on:** 2025-08-20T15:13:53.799Z  
 > **Purpose:** AI code generation reference - shows relevant project structure for development
 
 ## Directory Tree
@@ -28,6 +28,7 @@
 │   │   │   │   ├── error.tsx
 │   │   │   │   ├── loading.tsx
 │   │   │   │   └── page.tsx
+│   │   │   ├── @contracts/
 │   │   │   ├── @documents/
 │   │   │   │   ├── library/
 │   │   │   │   │   └── page.tsx
@@ -51,18 +52,30 @@
 │   │   │   │   └── page.tsx
 │   │   │   ├── layout.tsx
 │   │   │   └── page.tsx
+│   │   ├── actions/
 │   │   ├── global-error.tsx
 │   │   ├── globals.css
 │   │   ├── layout.tsx
 │   │   ├── not-found.tsx
 │   │   └── page.tsx
 │   ├── components/
+│   │   ├── analytics/
+│   │   ├── auth/
+│   │   │   ├── components/
+│   │   │   ├── auth-guard.tsx
+│   │   │   ├── permission-demo.tsx
+│   │   │   ├── permission-guard.tsx
+│   │   │   └── user-profile.tsx
+│   │   ├── contracts/
 │   │   ├── documents/
+│   │   ├── kbar/
 │   │   ├── layout/
 │   │   │   ├── app-sidebar.tsx
 │   │   │   ├── header.tsx
 │   │   │   └── page-container.tsx
+│   │   ├── modal/
 │   │   ├── partners/
+│   │   ├── projects/
 │   │   ├── shared/
 │   │   │   ├── error-boundary.tsx
 │   │   │   └── module-error-fallback.tsx
@@ -154,10 +167,6 @@
 │   │   │   │   ├── partner-suggestions.ts
 │   │   │   │   └── summarize-contract.ts
 │   │   │   └── genkit.ts
-│   │   ├── auth/
-│   │   │   ├── clerk.ts
-│   │   │   ├── middleware.ts
-│   │   │   └── permissions.ts
 │   │   ├── firebase/
 │   │   │   ├── app-check.ts
 │   │   │   ├── auth.ts
@@ -165,6 +174,7 @@
 │   │   │   ├── config.ts
 │   │   │   ├── server.ts
 │   │   │   └── types.ts
+│   │   ├── queries/
 │   │   ├── supabase/
 │   │   │   ├── auth.ts
 │   │   │   ├── client.ts
@@ -178,10 +188,31 @@
 │   │   ├── parsers.ts
 │   │   ├── theme.ts
 │   │   └── utils.ts
+│   ├── styles/
 │   ├── types/
+│   │   ├── auth.types.ts
 │   │   ├── data-table.ts
 │   │   └── index.ts
 │   ├── features/
+│   │   ├── analytics/
+│   │   │   ├── components/
+│   │   │   ├── hooks/
+│   │   │   ├── services/
+│   │   │   └── types/
+│   │   ├── auth/
+│   │   │   ├── components/
+│   │   │   ├── hooks/
+│   │   │   │   ├── use-auth.ts
+│   │   │   │   └── use-permissions.ts
+│   │   │   ├── services/
+│   │   │   │   └── auth-service.ts
+│   │   │   └── types/
+│   │   │       └── auth.types.ts
+│   │   ├── contracts/
+│   │   │   ├── components/
+│   │   │   ├── hooks/
+│   │   │   ├── services/
+│   │   │   └── types/
 │   │   ├── documents/
 │   │   │   ├── components/
 │   │   │   ├── hooks/
@@ -192,7 +223,15 @@
 │   │   │   ├── hooks/
 │   │   │   ├── services/
 │   │   │   └── types/
+│   │   ├── projects/
+│   │   │   ├── components/
+│   │   │   ├── hooks/
+│   │   │   ├── services/
+│   │   │   └── types/
 │   │   └── shared/
+│   ├── store/
+│   ├── instrumentation-client.ts
+│   ├── instrumentation.ts
 │   └── middleware.ts
 ├── custom_modes/
 │   ├── creative_instructions.md
