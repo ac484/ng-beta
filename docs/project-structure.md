@@ -1,6 +1,6 @@
 # Project Structure
 
-> **Auto-generated on:** 2025-08-20T17:09:04.552Z  
+> **Auto-generated on:** 2025-08-20T17:20:26.153Z  
 > **Purpose:** AI code generation reference - shows relevant project structure for development
 
 ## Directory Tree
@@ -53,6 +53,10 @@
 │   │   │   ├── layout.tsx
 │   │   │   └── page.tsx
 │   │   ├── actions/
+│   │   │   ├── contracts-actions.ts
+│   │   │   ├── documents-actions.ts
+│   │   │   ├── partners-actions.ts
+│   │   │   └── projects-actions.ts
 │   │   ├── global-error.tsx
 │   │   ├── globals.css
 │   │   ├── layout.tsx
@@ -66,7 +70,8 @@
 │   │   ├── layout/
 │   │   │   ├── app-sidebar.tsx
 │   │   │   ├── header.tsx
-│   │   │   └── page-container.tsx
+│   │   │   ├── page-container.tsx
+│   │   │   └── providers.tsx
 │   │   ├── modal/
 │   │   ├── partners/
 │   │   ├── projects/
@@ -171,6 +176,10 @@
 │   │   │   ├── server.ts
 │   │   │   └── types.ts
 │   │   ├── queries/
+│   │   │   ├── contracts-queries.ts
+│   │   │   ├── documents-queries.ts
+│   │   │   ├── partners-queries.ts
+│   │   │   └── projects-queries.ts
 │   │   ├── supabase/
 │   │   │   ├── auth.ts
 │   │   │   ├── client.ts
