@@ -1,83 +1,547 @@
-{
-  "title": "Next.js Server Actions 實際應用案例",
-  "version": "Next.js 14+",
-  "description": "Server Actions 在實際項目中的應用案例，包括博客系統、電商平台、社交媒體和企業應用",
-  "metadata": {
-    "category": "Real World Examples",
-    "complexity": "Medium",
-    "usage": "實際項目應用、最佳實踐參考、架構設計、代碼實現",
-    "lastmod": "2025-01-17"
-  },
-  "content": {
-    "blog_platform": {
-      "description": "博客平台的 Server Actions 實現",
-      "features": {
-        "post_management": "文章的創建、編輯、刪除",
-        "comment_system": "評論系統",
-        "user_management": "用戶管理",
-        "content_moderation": "內容審核"
-      },
-      "examples": {
-        "post_creation": "'use server'\nexport async function createPost(formData: FormData) {\n  const sessionId = cookies().get('sessionId')?.value\n  if (!sessionId) throw new Error('Unauthorized')\n  \n  const session = await db.session.findUnique({\n    where: { id: sessionId },\n    include: { user: true }\n  })\n  if (!session) throw new Error('Invalid session')\n  \n  const title = formData.get('title')\n  const content = formData.get('content')\n  const category = formData.get('category')\n  const tags = formData.getAll('tags')\n  \n  if (!title || !content) {\n    throw new Error('Title and content are required')\n  }\n  \n  // 創建文章\n  const post = await db.post.create({\n    data: {\n      title: title.toString(),\n      content: content.toString(),\n      category: category?.toString() || 'General',\n      authorId: session.user.id,\n      tags: {\n        create: tags.map(tag => ({ name: tag.toString() }))\n      }\n    }\n  })\n  \n  revalidatePath('/posts')\n  revalidatePath(`/posts/${post.id}`)\n  \n  return { success: true, postId: post.id }\n}",
-        "comment_system": "'use server'\nexport async function addComment(postId: string, formData: FormData) {\n  const sessionId = cookies().get('sessionId')?.value\n  if (!sessionId) throw new Error('Unauthorized')\n  \n  const content = formData.get('content')\n  if (!content || content.toString().trim().length < 3) {\n    throw new Error('Comment must be at least 3 characters')\n  }\n  \n  const comment = await db.comment.create({\n    data: {\n      content: content.toString(),\n      postId,\n      authorId: sessionId\n    }\n  })\n  \n  revalidatePath(`/posts/${postId}`)\n  \n  return { success: true, comment }\n}"
-      }
-    },
-    "e_commerce_platform": {
-      "description": "電商平台的 Server Actions 實現",
-      "features": {
-        "product_management": "產品管理",
-        "order_processing": "訂單處理",
-        "inventory_management": "庫存管理",
-        "payment_integration": "支付集成"
-      },
-      "examples": {
-        "order_creation": "'use server'\nexport async function createOrder(formData: FormData) {\n  const sessionId = cookies().get('sessionId')?.value\n  if (!sessionId) throw new Error('Unauthorized')\n  \n  const cartItems = JSON.parse(formData.get('cartItems') as string)\n  const shippingAddress = JSON.parse(formData.get('shippingAddress') as string)\n  const paymentMethod = formData.get('paymentMethod')\n  \n  if (!cartItems || cartItems.length === 0) {\n    throw new Error('Cart is empty')\n  }\n  \n  return await db.$transaction(async (tx) => {\n    // 檢查庫存\n    for (const item of cartItems) {\n      const product = await tx.product.findUnique({\n        where: { id: item.productId },\n        select: { stock: true, price: true }\n      })\n      \n      if (!product || product.stock < item.quantity) {\n        throw new Error(`Insufficient stock for product ${item.productId}`)\n      }\n    }\n    \n    // 計算總價\n    const total = cartItems.reduce((sum, item) => {\n      const product = cartItems.find(p => p.id === item.productId)\n      return sum + (product.price * item.quantity)\n    }, 0)\n    \n    // 創建訂單\n    const order = await tx.order.create({\n      data: {\n        userId: sessionId,\n        total,\n        status: 'PENDING',\n        shippingAddress,\n        paymentMethod: paymentMethod?.toString() || 'CREDIT_CARD',\n        items: {\n          create: cartItems.map(item => ({\n            productId: item.productId,\n            quantity: item.quantity,\n            price: item.price\n          }))\n        }\n      }\n    })\n    \n    // 更新庫存\n    for (const item of cartItems) {\n      await tx.product.update({\n        where: { id: item.productId },\n        data: { stock: { decrement: item.quantity } }\n      })\n    }\n    \n    // 清空購物車\n    await tx.cartItem.deleteMany({\n      where: { userId: sessionId }\n    })\n    \n    return { success: true, orderId: order.id }\n  })\n}",
-        "inventory_update": "'use server'\nexport async function updateInventory(productId: string, formData: FormData) {\n  const sessionId = cookies().get('sessionId')?.value\n  if (!sessionId) throw new Error('Unauthorized')\n  \n  const user = await db.user.findUnique({\n    where: { id: sessionId },\n    select: { role: true }\n  })\n  \n  if (user?.role !== 'ADMIN') {\n    throw new Error('Insufficient permissions')\n  }\n  \n  const stock = Number(formData.get('stock'))\n  const price = Number(formData.get('price'))\n  \n  if (isNaN(stock) || stock < 0) {\n    throw new Error('Invalid stock quantity')\n  }\n  \n  if (isNaN(price) || price < 0) {\n    throw new Error('Invalid price')\n  }\n  \n  const product = await db.product.update({\n    where: { id: productId },\n    data: { stock, price }\n  })\n  \n  revalidatePath('/admin/products')\n  revalidatePath(`/products/${productId}`)\n  \n  return { success: true, product }\n}"
-      }
-    },
-    "social_media_platform": {
-      "description": "社交媒體平台的 Server Actions 實現",
-      "features": {
-        "post_sharing": "分享帖子",
-        "user_interactions": "用戶互動（點讚、評論、分享）",
-        "friend_system": "好友系統",
-        "notification_system": "通知系統"
-      },
-      "examples": {
-        "post_interaction": "'use server'\nexport async function toggleLike(postId: string) {\n  const sessionId = cookies().get('sessionId')?.value\n  if (!sessionId) throw new Error('Unauthorized')\n  \n  const existingLike = await db.like.findFirst({\n    where: {\n      postId,\n      userId: sessionId\n    }\n  })\n  \n  if (existingLike) {\n    // 取消點讚\n    await db.like.delete({\n      where: { id: existingLike.id }\n    })\n    \n    // 減少點讚數\n    await db.post.update({\n      where: { id: postId },\n      data: { likeCount: { decrement: 1 } }\n    })\n    \n    revalidatePath(`/posts/${postId}`)\n    return { liked: false }\n  } else {\n    // 添加點讚\n    await db.like.create({\n      data: {\n        postId,\n        userId: sessionId\n      }\n    })\n    \n    // 增加點讚數\n    await db.post.update({\n      where: { id: postId },\n      data: { likeCount: { increment: 1 } }\n    })\n    \n    // 發送通知\n    const post = await db.post.findUnique({\n      where: { id: postId },\n      include: { author: true }\n    })\n    \n    if (post && post.author.id !== sessionId) {\n      await db.notification.create({\n        data: {\n          userId: post.author.id,\n          type: 'LIKE',\n          message: `Someone liked your post "${post.title}"`,\n          relatedId: postId\n        }\n      })\n    }\n    \n    revalidatePath(`/posts/${postId}`)\n    return { liked: true }\n  }\n}",
-        "friend_request": "'use server'\nexport async function sendFriendRequest(targetUserId: string) {\n  const sessionId = cookies().get('sessionId')?.value\n  if (!sessionId) throw new Error('Unauthorized')\n  \n  if (sessionId === targetUserId) {\n    throw new Error('Cannot send friend request to yourself')\n  }\n  \n  // 檢查是否已經是好友\n  const existingFriendship = await db.friendship.findFirst({\n    where: {\n      OR: [\n        { userId: sessionId, friendId: targetUserId },\n        { userId: targetUserId, friendId: sessionId }\n      ]\n    }\n  })\n  \n  if (existingFriendship) {\n    throw new Error('Friendship already exists')\n  }\n  \n  // 檢查是否已經發送過請求\n  const existingRequest = await db.friendRequest.findFirst({\n    where: {\n      fromUserId: sessionId,\n      toUserId: targetUserId,\n      status: 'PENDING'\n    }\n  })\n  \n  if (existingRequest) {\n    throw new Error('Friend request already sent')\n  }\n  \n  // 發送好友請求\n  const request = await db.friendRequest.create({\n    data: {\n      fromUserId: sessionId,\n      toUserId: targetUserId,\n      status: 'PENDING'\n    }\n  })\n  \n  // 發送通知\n  await db.notification.create({\n    data: {\n      userId: targetUserId,\n      type: 'FRIEND_REQUEST',\n      message: 'You have a new friend request',\n      relatedId: request.id\n    }\n  })\n  \n  revalidatePath('/friends')\n  \n  return { success: true, requestId: request.id }\n}"
-      }
-    },
-    "enterprise_application": {
-      "description": "企業應用的 Server Actions 實現",
-      "features": {
-        "workflow_management": "工作流程管理",
-        "document_management": "文檔管理",
-        "reporting_system": "報告系統",
-        "audit_trail": "審計追蹤"
-      },
-      "examples": {
-        "workflow_approval": "'use server'\nexport async function approveWorkflow(workflowId: string, formData: FormData) {\n  const sessionId = cookies().get('sessionId')?.value\n  if (!sessionId) throw new Error('Unauthorized')\n  \n  const user = await db.user.findUnique({\n    where: { id: sessionId },\n    include: { role: true, permissions: true }\n  })\n  \n  if (!user) throw new Error('User not found')\n  \n  const workflow = await db.workflow.findUnique({\n    where: { id: workflowId },\n    include: { steps: true, currentStep: true }\n  })\n  \n  if (!workflow) throw new Error('Workflow not found')\n  \n  // 檢查用戶是否有權限審批當前步驟\n  const currentStep = workflow.steps.find(s => s.id === workflow.currentStepId)\n  if (!currentStep || !currentStep.approvers.includes(user.id)) {\n    throw new Error('Insufficient permissions to approve this step')\n  }\n  \n  const comment = formData.get('comment')?.toString() || ''\n  \n  return await db.$transaction(async (tx) => {\n    // 記錄審批\n    await tx.approval.create({\n      data: {\n        workflowId,\n        stepId: workflow.currentStepId,\n        approverId: user.id,\n        status: 'APPROVED',\n        comment,\n        timestamp: new Date()\n      }\n    })\n    \n    // 檢查是否所有審批人都已審批\n    const approvals = await tx.approval.count({\n      where: {\n        stepId: workflow.currentStepId,\n        status: 'APPROVED'\n      }\n    })\n    \n    if (approvals >= currentStep.requiredApprovals) {\n      // 移動到下一步\n      const nextStep = workflow.steps.find(s => s.order === currentStep.order + 1)\n      \n      if (nextStep) {\n        await tx.workflow.update({\n          where: { id: workflowId },\n          data: { currentStepId: nextStep.id }\n        })\n      } else {\n        // 工作流程完成\n        await tx.workflow.update({\n          where: { id: workflowId },\n          data: { status: 'COMPLETED', completedAt: new Date() }\n        })\n      }\n    }\n    \n    // 記錄審計日誌\n    await tx.auditLog.create({\n      data: {\n        userId: user.id,\n        action: 'WORKFLOW_APPROVAL',\n        resourceType: 'WORKFLOW',\n        resourceId: workflowId,\n        details: `Approved step: ${currentStep.name}`\n      }\n    })\n    \n    revalidatePath('/workflows')\n    revalidatePath(`/workflows/${workflowId}`)\n    \n    return { success: true }\n  })\n}",
-        "document_upload": "'use server'\nexport async function uploadDocument(formData: FormData) {\n  const sessionId = cookies().get('sessionId')?.value\n  if (!sessionId) throw new Error('Unauthorized')\n  \n  const file = formData.get('file') as File\n  const category = formData.get('category')\n  const description = formData.get('description')\n  \n  if (!file) throw new Error('No file uploaded')\n  \n  // 驗證文件類型\n  const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']\n  if (!allowedTypes.includes(file.type)) {\n    throw new Error('Invalid file type. Only PDF and Word documents are allowed.')\n  }\n  \n  // 驗證文件大小 (10MB)\n  if (file.size > 10 * 1024 * 1024) {\n    throw new Error('File too large. Maximum size is 10MB.')\n  }\n  \n  // 生成唯一文件名\n  const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`\n  \n  // 保存文件到雲存儲\n  const fileUrl = await uploadToCloudStorage(file, fileName)\n  \n  // 保存文檔記錄到數據庫\n  const document = await db.document.create({\n    data: {\n      fileName: file.name,\n      fileUrl,\n      fileSize: file.size,\n      mimeType: file.type,\n      category: category?.toString() || 'General',\n      description: description?.toString() || '',\n      uploadedBy: sessionId,\n      status: 'ACTIVE'\n    }\n  })\n  \n  // 記錄審計日誌\n  await db.auditLog.create({\n    data: {\n      userId: sessionId,\n      action: 'DOCUMENT_UPLOAD',\n      resourceType: 'DOCUMENT',\n      resourceId: document.id,\n      details: `Uploaded document: ${file.name}`\n    }\n  })\n  \n  revalidatePath('/documents')\n  \n  return { success: true, documentId: document.id, fileName: file.name }\n}"
+# Next.js Server Actions 實際應用案例
+
+**版本:** Next.js 14+  
+**最後更新:** 2025-01-17  
+**分類:** Real World Examples  
+**複雜度:** Medium  
+
+## 概述
+
+Server Actions 在實際項目中的應用案例，包括博客系統、電商平台、社交媒體和企業應用。
+
+## 博客平台
+
+### 描述
+博客平台的 Server Actions 實現
+
+### 主要功能
+- **文章管理**: 文章的創建、編輯、刪除
+- **評論系統**: 評論系統
+- **用戶管理**: 用戶管理
+- **內容審核**: 內容審核
+
+### 範例
+
+#### 文章創建
+```typescript
+'use server'
+export async function createPost(formData: FormData) {
+  const sessionId = cookies().get('sessionId')?.value
+  if (!sessionId) throw new Error('Unauthorized')
+  
+  const session = await db.session.findUnique({
+    where: { id: sessionId },
+    include: { user: true }
+  })
+  if (!session) throw new Error('Invalid session')
+  
+  const title = formData.get('title')
+  const content = formData.get('content')
+  const category = formData.get('category')
+  const tags = formData.getAll('tags')
+  
+  if (!title || !content) {
+    throw new Error('Title and content are required')
+  }
+  
+  // 創建文章
+  const post = await db.post.create({
+    data: {
+      title: title.toString(),
+      content: content.toString(),
+      category: category?.toString() || 'General',
+      authorId: session.user.id,
+      tags: {
+        create: tags.map(tag => ({ name: tag.toString() }))
       }
     }
-  },
-  "implementation_patterns": {
-    "transaction_management": "使用數據庫事務確保數據一致性",
-    "error_handling": "實現全面的錯誤處理和用戶反饋",
-    "validation": "在服務器端進行數據驗證",
-    "caching": "使用適當的緩存策略",
-    "security": "實現權限檢查和輸入驗證",
-    "audit_logging": "記錄重要操作以備審計"
-  },
-  "best_practices": [
-    "根據業務需求設計 Server Actions",
-    "實現適當的錯誤處理和用戶反饋",
-    "使用事務處理複雜操作",
-    "實現權限檢查和訪問控制",
-    "記錄審計日誌",
-    "優化性能和緩存策略",
-    "測試所有邊界情況",
-    "文檔化 API 和業務邏輯"
-  ]
+  })
+  
+  revalidatePath('/posts')
+  revalidatePath(`/posts/${post.id}`)
+  
+  return { success: true, postId: post.id }
 }
+```
+
+#### 評論系統
+```typescript
+'use server'
+export async function addComment(postId: string, formData: FormData) {
+  const sessionId = cookies().get('sessionId')?.value
+  if (!sessionId) throw new Error('Unauthorized')
+  
+  const content = formData.get('content')
+  if (!content || content.toString().trim().length < 3) {
+    throw new Error('Comment must be at least 3 characters')
+  }
+  
+  const comment = await db.comment.create({
+    data: {
+      content: content.toString(),
+      postId,
+      authorId: sessionId
+    }
+  })
+  
+  revalidatePath(`/posts/${postId}`)
+  
+  return { success: true, comment }
+}
+```
+
+## 電商平台
+
+### 描述
+電商平台的 Server Actions 實現
+
+### 主要功能
+- **產品管理**: 產品管理
+- **訂單處理**: 訂單處理
+- **庫存管理**: 庫存管理
+- **支付集成**: 支付集成
+
+### 範例
+
+#### 訂單創建
+```typescript
+'use server'
+export async function createOrder(formData: FormData) {
+  const sessionId = cookies().get('sessionId')?.value
+  if (!sessionId) throw new Error('Unauthorized')
+  
+  const cartItems = JSON.parse(formData.get('cartItems') as string)
+  const shippingAddress = JSON.parse(formData.get('shippingAddress') as string)
+  const paymentMethod = formData.get('paymentMethod')
+  
+  if (!cartItems || cartItems.length === 0) {
+    throw new Error('Cart is empty')
+  }
+  
+  return await db.$transaction(async (tx) => {
+    // 檢查庫存
+    for (const item of cartItems) {
+      const product = await tx.product.findUnique({
+        where: { id: item.productId },
+        select: { stock: true, price: true }
+      })
+      
+      if (!product || product.stock < item.quantity) {
+        throw new Error(`Insufficient stock for product ${item.productId}`)
+      }
+    }
+    
+    // 計算總價
+    const total = cartItems.reduce((sum, item) => {
+      const product = cartItems.find(p => p.id === item.productId)
+      return sum + (product.price * item.quantity)
+    }, 0)
+    
+    // 創建訂單
+    const order = await tx.order.create({
+      data: {
+        userId: sessionId,
+        total,
+        status: 'PENDING',
+        shippingAddress,
+        paymentMethod: paymentMethod?.toString() || 'CREDIT_CARD',
+        items: {
+          create: cartItems.map(item => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.price
+          }))
+        }
+      }
+    })
+    
+    // 更新庫存
+    for (const item of cartItems) {
+      await tx.product.update({
+        where: { id: item.productId },
+        data: { stock: { decrement: item.quantity } }
+      })
+    }
+    
+    // 清空購物車
+    await tx.cartItem.deleteMany({
+      where: { userId: sessionId }
+    })
+    
+    return { success: true, orderId: order.id }
+  })
+}
+```
+
+#### 庫存更新
+```typescript
+'use server'
+export async function updateInventory(productId: string, formData: FormData) {
+  const sessionId = cookies().get('sessionId')?.value
+  if (!sessionId) throw new Error('Unauthorized')
+  
+  const user = await db.user.findUnique({
+    where: { id: sessionId },
+    select: { role: true }
+  })
+  
+  if (user?.role !== 'ADMIN') {
+    throw new Error('Insufficient permissions')
+  }
+  
+  const stock = Number(formData.get('stock'))
+  const price = Number(formData.get('price'))
+  
+  if (isNaN(stock) || stock < 0) {
+    throw new Error('Invalid stock quantity')
+  }
+  
+  if (isNaN(price) || price < 0) {
+    throw new Error('Invalid price')
+  }
+  
+  const product = await db.product.update({
+    where: { id: productId },
+    data: { stock, price }
+  })
+  
+  revalidatePath('/admin/products')
+  revalidatePath(`/products/${productId}`)
+  
+  return { success: true, product }
+}
+```
+
+## 社交媒體平台
+
+### 描述
+社交媒體平台的 Server Actions 實現
+
+### 主要功能
+- **帖子分享**: 分享帖子
+- **用戶互動**: 用戶互動（點讚、評論、分享）
+- **好友系統**: 好友系統
+- **通知系統**: 通知系統
+
+### 範例
+
+#### 帖子互動
+```typescript
+'use server'
+export async function toggleLike(postId: string) {
+  const sessionId = cookies().get('sessionId')?.value
+  if (!sessionId) throw new Error('Unauthorized')
+  
+  const existingLike = await db.like.findFirst({
+    where: {
+      postId,
+      userId: sessionId
+    }
+  })
+  
+  if (existingLike) {
+    // 取消點讚
+    await db.like.delete({
+      where: { id: existingLike.id }
+    })
+    
+    // 減少點讚數
+    await db.post.update({
+      where: { id: postId },
+      data: { likeCount: { decrement: 1 } }
+    })
+    
+    revalidatePath(`/posts/${postId}`)
+    return { liked: false }
+  } else {
+    // 添加點讚
+    await db.like.create({
+      data: {
+        postId,
+        userId: sessionId
+      }
+    })
+    
+    // 增加點讚數
+    await db.post.update({
+      where: { id: postId },
+      data: { likeCount: { increment: 1 } }
+    })
+    
+    // 發送通知
+    const post = await db.post.findUnique({
+      where: { id: postId },
+      include: { author: true }
+    })
+    
+    if (post && post.author.id !== sessionId) {
+      await db.notification.create({
+        data: {
+          userId: post.author.id,
+          type: 'LIKE',
+          message: `Someone liked your post "${post.title}"`,
+          relatedId: postId
+        }
+      })
+    }
+    
+    revalidatePath(`/posts/${postId}`)
+    return { liked: true }
+  }
+}
+```
+
+#### 好友請求
+```typescript
+'use server'
+export async function sendFriendRequest(targetUserId: string) {
+  const sessionId = cookies().get('sessionId')?.value
+  if (!sessionId) throw new Error('Unauthorized')
+  
+  if (sessionId === targetUserId) {
+    throw new Error('Cannot send friend request to yourself')
+  }
+  
+  // 檢查是否已經是好友
+  const existingFriendship = await db.friendship.findFirst({
+    where: {
+      OR: [
+        { userId: sessionId, friendId: targetUserId },
+        { userId: targetUserId, friendId: sessionId }
+      ]
+    }
+  })
+  
+  if (existingFriendship) {
+    throw new Error('Friendship already exists')
+  }
+  
+  // 檢查是否已經發送過請求
+  const existingRequest = await db.friendRequest.findFirst({
+    where: {
+      fromUserId: sessionId,
+      toUserId: targetUserId,
+      status: 'PENDING'
+    }
+  })
+  
+  if (existingRequest) {
+    throw new Error('Friend request already sent')
+  }
+  
+  // 發送好友請求
+  const request = await db.friendRequest.create({
+    data: {
+      fromUserId: sessionId,
+      toUserId: targetUserId,
+      status: 'PENDING'
+    }
+  })
+  
+  // 發送通知
+  await db.notification.create({
+    data: {
+      userId: targetUserId,
+      type: 'FRIEND_REQUEST',
+      message: 'You have a new friend request',
+      relatedId: request.id
+    }
+  })
+  
+  revalidatePath('/friends')
+  
+  return { success: true, requestId: request.id }
+}
+```
+
+## 企業應用
+
+### 描述
+企業應用的 Server Actions 實現
+
+### 主要功能
+- **工作流程管理**: 工作流程管理
+- **文檔管理**: 文檔管理
+- **報告系統**: 報告系統
+- **審計追蹤**: 審計追蹤
+
+### 範例
+
+#### 工作流程審批
+```typescript
+'use server'
+export async function approveWorkflow(workflowId: string, formData: FormData) {
+  const sessionId = cookies().get('sessionId')?.value
+  if (!sessionId) throw new Error('Unauthorized')
+  
+  const user = await db.user.findUnique({
+    where: { id: sessionId },
+    include: { role: true, permissions: true }
+  })
+  
+  if (!user) throw new Error('User not found')
+  
+  const workflow = await db.workflow.findUnique({
+    where: { id: workflowId },
+    include: { steps: true, currentStep: true }
+  })
+  
+  if (!workflow) throw new Error('Workflow not found')
+  
+  // 檢查用戶是否有權限審批當前步驟
+  const currentStep = workflow.steps.find(s => s.id === workflow.currentStepId)
+  if (!currentStep || !currentStep.approvers.includes(user.id)) {
+    throw new Error('Insufficient permissions to approve this step')
+  }
+  
+  const comment = formData.get('comment')?.toString() || ''
+  
+  return await db.$transaction(async (tx) => {
+    // 記錄審批
+    await tx.approval.create({
+      data: {
+        workflowId,
+        stepId: workflow.currentStepId,
+        approverId: user.id,
+        status: 'APPROVED',
+        comment,
+        timestamp: new Date()
+      }
+    })
+    
+    // 檢查是否所有審批人都已審批
+    const approvals = await tx.approval.count({
+      where: {
+        stepId: workflow.currentStepId,
+        status: 'APPROVED'
+      }
+    })
+    
+    if (approvals >= currentStep.requiredApprovals) {
+      // 移動到下一步
+      const nextStep = workflow.steps.find(s => s.order === currentStep.order + 1)
+      
+      if (nextStep) {
+        await tx.workflow.update({
+          where: { id: workflowId },
+          data: { currentStepId: nextStep.id }
+        })
+      } else {
+        // 工作流程完成
+        await tx.workflow.update({
+          where: { id: workflowId },
+          data: { status: 'COMPLETED', completedAt: new Date() }
+        })
+      }
+    }
+    
+    // 記錄審計日誌
+    await tx.auditLog.create({
+      data: {
+        userId: user.id,
+        action: 'WORKFLOW_APPROVAL',
+        resourceType: 'WORKFLOW',
+        resourceId: workflowId,
+        details: `Approved step: ${currentStep.name}`
+      }
+    })
+    
+    revalidatePath('/workflows')
+    revalidatePath(`/workflows/${workflowId}`)
+    
+    return { success: true }
+  })
+}
+```
+
+#### 文檔上傳
+```typescript
+'use server'
+export async function uploadDocument(formData: FormData) {
+  const sessionId = cookies().get('sessionId')?.value
+  if (!sessionId) throw new Error('Unauthorized')
+  
+  const file = formData.get('file') as File
+  const category = formData.get('category')
+  const description = formData.get('description')
+  
+  if (!file) throw new Error('No file uploaded')
+  
+  // 驗證文件類型
+  const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error('Invalid file type. Only PDF and Word documents are allowed.')
+  }
+  
+  // 驗證文件大小 (10MB)
+  if (file.size > 10 * 1024 * 1024) {
+    throw new Error('File too large. Maximum size is 10MB.')
+  }
+  
+  // 生成唯一文件名
+  const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+  
+  // 保存文件到雲存儲
+  const fileUrl = await uploadToCloudStorage(file, fileName)
+  
+  // 保存文檔記錄到數據庫
+  const document = await db.document.create({
+    data: {
+      fileName: file.name,
+      fileUrl,
+      fileSize: file.size,
+      mimeType: file.type,
+      category: category?.toString() || 'General',
+      description: description?.toString() || '',
+      uploadedBy: sessionId,
+      status: 'ACTIVE'
+    }
+  })
+  
+  // 記錄審計日誌
+  await db.auditLog.create({
+    data: {
+      userId: sessionId,
+      action: 'DOCUMENT_UPLOAD',
+      resourceType: 'DOCUMENT',
+      resourceId: document.id,
+      details: `Uploaded document: ${file.name}`
+    }
+  })
+  
+  revalidatePath('/documents')
+  
+  return { success: true, documentId: document.id, fileName: file.name }
+}
+```
+
+## 實現模式
+
+### 事務管理
+使用數據庫事務確保數據一致性
+
+### 錯誤處理
+實現全面的錯誤處理和用戶反饋
+
+### 驗證
+在服務器端進行數據驗證
+
+### 緩存
+使用適當的緩存策略
+
+### 安全
+實現權限檢查和輸入驗證
+
+### 審計日誌
+記錄重要操作以備審計
+
+## 最佳實踐
+
+1. 根據業務需求設計 Server Actions
+2. 實現適當的錯誤處理和用戶反饋
+3. 使用事務處理複雜操作
+4. 實現權限檢查和訪問控制
+5. 記錄審計日誌
+6. 優化性能和緩存策略
+7. 測試所有邊界情況
+8. 文檔化 API 和業務邏輯

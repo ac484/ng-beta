@@ -12,6 +12,6 @@
   },
   "then": {
     "type": "askAgent",
-    "prompt": "檢查平行路由的配置是否正確。確保所有槽都有對應的 default.tsx、loading.tsx、error.tsx 檔案，並且 layout.tsx 中正確處理所有槽的 props。檢查項目包括：\n\n1. 檔案結構完整性：\n   - 每個 @槽位 目錄都有 default.tsx\n   - 每個 @槽位 目錄都有 loading.tsx  \n   - 每個 @槽位 目錄都有 error.tsx\n   - 每個 @槽位 目錄都有 page.tsx\n\n2. Layout.tsx 配置：\n   - 所有槽位都在 layout.tsx 的 props 中定義\n   - TypeScript 類型定義正確\n   - 所有槽位都在 JSX 中正確渲染\n\n3. 命名一致性：\n   - 槽位目錄名稱符合 @name 格式\n   - 檔案命名符合 Next.js 約定\n\n4. 最佳實踐檢查：\n   - default.tsx 檔案返回適當的內容\n   - loading.tsx 提供有意義的載入狀態\n   - error.tsx 包含錯誤處理邏輯\n\n請提供詳細的檢查結果和改進建議。"
+    "prompt": "🔍 **平行路由配置完整性檢查**\n\n請執行以下全面檢查並提供詳細報告：\n\n## 1. 檔案結構完整性\n- ✅ 每個 @槽位 目錄都有 default.tsx\n- ✅ 每個 @槽位 目錄都有 loading.tsx  \n- ✅ 每個 @槽位 目錄都有 error.tsx\n- ✅ 每個 @槽位 目錄都有 page.tsx\n- ✅ 檢查是否有孤立的槽位（沒有在 layout 中使用）\n\n## 2. Layout.tsx 配置驗證\n- ✅ 所有槽位都在 layout.tsx 的 props 中定義\n- ✅ TypeScript 類型定義正確且完整\n- ✅ 所有槽位都在 JSX 中正確渲染\n- ✅ 檢查是否有條件渲染邏輯\n- ✅ 驗證 Suspense 和 ErrorBoundary 的使用\n\n## 3. 程式碼品質檢查\n- ✅ default.tsx 檔案返回適當的內容（null 或有意義的預設內容）\n- ✅ loading.tsx 提供有意義的載入狀態（骨架屏或載入動畫）\n- ✅ error.tsx 包含完整的錯誤處理邏輯和重試機制\n- ✅ 檢查是否使用了適當的 React.ReactNode 類型\n\n## 4. 效能和最佳實踐\n- ✅ 檢查是否有不必要的重新渲染\n- ✅ 驗證懶載入的實現\n- ✅ 檢查是否正確使用了 dynamic imports\n- ✅ 驗證快取策略的實現\n\n## 5. 自動修復建議\n如果發現問題，請提供：\n- 🔧 具體的修復程式碼\n- 📝 檔案創建模板\n- ⚡ 效能優化建議\n- 🎯 最佳實踐建議\n\n**請提供結構化的檢查報告，包含問題清單、修復建議和程式碼範例。**"
   }
 }

@@ -2,18 +2,16 @@
   "enabled": true,
   "name": "Code Quality Check",
   "description": "自動檢查程式碼品質並修復格式問題",
-  "version": "1",
+  "version": "2",
   "when": {
     "type": "fileEdited",
     "patterns": [
-      "**/*.{ts",
-      "tsx",
-      "js",
-      "jsx}"
+      "**/*.{ts,tsx,js,jsx}",
+      "src/**/*.{ts,tsx,js,jsx}"
     ]
   },
   "then": {
     "type": "askAgent",
-    "prompt": "A TypeScript/JavaScript file has been saved. Please run the following commands to ensure code quality:\n\n1. Execute `npm run lint:fix` to automatically fix ESLint issues\n2. Execute `npm run format` to format the code with Prettier\n\nAfter running these commands, provide a brief summary of any issues found and fixed."
+    "prompt": "一個 TypeScript/JavaScript 檔案已被修改。請執行以下程式碼品質檢查：\n\n**檢查步驟**:\n1. 檢查專案是否有 ESLint 配置 (.eslintrc.json)\n2. 檢查專案是否有 Prettier 配置 (.prettierrc)\n3. 如果配置存在，執行 `npm run lint:fix` 修復 ESLint 問題\n4. 如果配置存在，執行 `npm run format` 格式化程式碼\n5. 檢查是否有 TypeScript 錯誤 (`npx tsc --noEmit`)\n\n**報告內容**:\n- 發現和修復的問題摘要\n- TypeScript 類型錯誤（如果有）\n- 程式碼品質建議\n- 如果命令執行失敗，提供解決方案\n\n**注意**: 如果相關配置檔案不存在，請建議如何設置程式碼品質工具。"
   }
 }

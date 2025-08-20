@@ -1,24 +1,20 @@
 {
   "enabled": true,
-  "name": "效能監控 Hook",
-  "description": "分析應用程式效能並提供最佳化建議，包括 bundle 大小分析、程式碼分割效果檢查、未使用依賴檢測等",
-  "version": "1",
+  "name": "效能監控與分析 Hook",
+  "description": "智慧分析應用程式效能，提供針對性的最佳化建議，專注於 Next.js 15 App Router 和平行路由的效能優化",
+  "version": "2",
   "when": {
     "type": "fileEdited",
     "patterns": [
       "package.json",
-      "next.config.ts",
-      "next.config.js",
-      "webpack.config.js",
-      "tsconfig.json",
-      ".next/build-manifest.json",
-      ".next/static/**/*",
-      "dist/**/*",
-      "build/**/*"
+      "next.config.{ts,js}",
+      "src/app/**/layout.tsx",
+      "src/components/**/*.{ts,tsx}",
+      "src/lib/**/*.{ts,tsx}"
     ]
   },
   "then": {
     "type": "askAgent",
-    "prompt": "分析建置輸出，檢查 bundle 大小、程式碼分割效果、未使用的依賴等。提供效能最佳化建議，包括程式碼分割、懶載入、快取策略等。請根據 Next.js 15 App Router 最佳實踐和專案整合標準進行分析，特別關注平行路由、Server Actions、TanStack Query 的效能影響。"
+    "prompt": "🚀 **效能分析與最佳化建議**\n\n請執行以下效能分析並提供具體建議：\n\n## 1. Bundle 分析\n- 📊 檢查是否可以執行 `npm run analyze` 或 `npx @next/bundle-analyzer`\n- 📦 分析大型依賴包和未使用的依賴\n- 🔍 識別可以進行程式碼分割的模組\n\n## 2. Next.js 15 特定最佳化\n- ⚡ 檢查 Server Components vs Client Components 的使用\n- 🔄 驗證 Server Actions 的實現效率\n- 📡 分析 TanStack Query 的快取策略\n- 🎯 檢查平行路由的載入效能\n\n## 3. 程式碼分割檢查\n- 🧩 檢查 dynamic imports 的使用\n- 📱 驗證懶載入的實現\n- 🎨 分析 UI 元件的載入策略\n\n## 4. 快取策略分析\n- 💾 檢查 Next.js 快取配置\n- 🔄 分析 revalidation 策略\n- 📊 驗證 TanStack Query 快取設定\n\n## 5. 效能指標建議\n- 📈 Core Web Vitals 最佳化建議\n- ⏱️ 首屏載入時間優化\n- 🔄 互動性能改善建議\n\n## 6. 具體行動項目\n請提供：\n- 🎯 優先級排序的最佳化建議\n- 💻 具體的程式碼修改範例\n- 📋 可執行的檢查清單\n- 📊 預期的效能改善指標\n\n**注意**: 請根據當前修改的檔案類型，提供最相關的效能分析和建議。"
   }
 }

@@ -1,81 +1,472 @@
-{
-  "title": "Next.js Server Actions 測試與調試",
-  "version": "Next.js 14+",
-  "description": "測試和調試 Server Actions 的方法，包括單元測試、集成測試、錯誤處理和調試技巧",
-  "metadata": {
-    "category": "Testing & Debugging",
-    "complexity": "Medium",
-    "usage": "單元測試、集成測試、錯誤處理、調試技巧、質量保證",
-    "lastmod": "2025-01-17"
-  },
-  "content": {
-    "unit_testing": {
-      "description": "對 Server Actions 進行單元測試",
-      "frameworks": {
-        "jest": "使用 Jest 進行測試",
-        "vitest": "使用 Vitest 進行測試",
-        "testing_library": "使用 React Testing Library 測試組件"
-      },
-      "examples": {
-        "basic_test": "import { describe, it, expect, vi } from 'vitest'\nimport { createPost } from './actions'\nimport { revalidatePath } from 'next/cache'\n\n// Mock Next.js functions\nvi.mock('next/cache', () => ({\n  revalidatePath: vi.fn()\n}))\n\nvi.mock('next/headers', () => ({\n  cookies: () => ({\n    get: vi.fn(() => ({ value: 'mock-session-id' }))\n  })\n}))\n\n// Mock database\nconst mockDb = {\n  post: {\n    create: vi.fn()\n  }\n}\n\nvi.mock('./db', () => ({\n  default: mockDb\n}))\n\ndescribe('createPost', () => {\n  it('should create a post successfully', async () => {\n    const mockPost = {\n      id: '1',\n      title: 'Test Post',\n      content: 'Test Content',\n      authorId: 'user-1'\n    }\n    \n    mockDb.post.create.mockResolvedValue(mockPost)\n    \n    const formData = new FormData()\n    formData.append('title', 'Test Post')\n    formData.append('content', 'Test Content')\n    \n    const result = await createPost(formData)\n    \n    expect(result).toEqual({\n      success: true,\n      post: mockPost\n    })\n    expect(mockDb.post.create).toHaveBeenCalledWith({\n      data: {\n        title: 'Test Post',\n        content: 'Test Content',\n        authorId: 'user-1'\n      }\n    })\n    expect(revalidatePath).toHaveBeenCalledWith('/posts')\n  })\n  \n  it('should return error for missing title', async () => {\n    const formData = new FormData()\n    formData.append('content', 'Test Content')\n    \n    const result = await createPost(formData)\n    \n    expect(result).toEqual({\n      success: false,\n      error: 'Title is required'\n    })\n    expect(mockDb.post.create).not.toHaveBeenCalled()\n  })\n})",
-        "mocking_external_services": "import { describe, it, expect, vi, beforeEach } from 'vitest'\nimport { sendEmail } from './actions'\n\n// Mock external email service\nconst mockEmailService = {\n  send: vi.fn()\n}\n\nvi.mock('./email-service', () => ({\n  default: mockEmailService\n}))\n\nbeforeEach(() => {\n  vi.clearAllMocks()\n})\n\ndescribe('sendEmail', () => {\n  it('should send email successfully', async () => {\n    mockEmailService.send.mockResolvedValue({ messageId: 'msg-123' })\n    \n    const formData = new FormData()\n    formData.append('to', 'test@example.com')\n    formData.append('subject', 'Test Subject')\n    formData.append('body', 'Test Body')\n    \n    const result = await sendEmail(formData)\n    \n    expect(result).toEqual({\n      success: true,\n      messageId: 'msg-123'\n    })\n    expect(mockEmailService.send).toHaveBeenCalledWith({\n      to: 'test@example.com',\n      subject: 'Test Subject',\n      body: 'Test Body'\n    })\n  })\n  \n  it('should handle email service errors', async () => {\n    mockEmailService.send.mockRejectedValue(new Error('Email service unavailable'))\n    \n    const formData = new FormData()\n    formData.append('to', 'test@example.com')\n    formData.append('subject', 'Test Subject')\n    formData.append('body', 'Test Body')\n    \n    const result = await sendEmail(formData)\n    \n    expect(result).toEqual({\n      success: false,\n      error: 'Email service unavailable'\n    })\n  })\n})"
-      }
-    },
-    "integration_testing": {
-      "description": "測試 Server Actions 與其他組件的集成",
-      "approaches": {
-        "component_testing": "測試使用 Server Actions 的組件",
-        "api_testing": "測試 Server Actions 的 API 行為",
-        "end_to_end": "端到端測試完整流程"
-      },
-      "example": "import { render, screen, waitFor } from '@testing-library/react'\nimport userEvent from '@testing-library/user-event'\nimport { PostForm } from './PostForm'\nimport { createPost } from './actions'\n\n// Mock the Server Action\nvi.mock('./actions', () => ({\n  createPost: vi.fn()\n}))\n\nconst mockCreatePost = createPost as vi.MockedFunction<typeof createPost>\n\ndescribe('PostForm Integration', () => {\n  it('should submit form and show success message', async () => {\n    const user = userEvent.setup()\n    \n    mockCreatePost.mockResolvedValue({\n      success: true,\n      post: { id: '1', title: 'Test Post', content: 'Test Content' }\n    })\n    \n    render(<PostForm />)\n    \n    // Fill form\n    await user.type(screen.getByLabelText(/title/i), 'Test Post')\n    await user.type(screen.getByLabelText(/content/i), 'Test Content')\n    \n    // Submit form\n    await user.click(screen.getByRole('button', { name: /create post/i }))\n    \n    // Wait for success message\n    await waitFor(() => {\n      expect(screen.getByText(/post created successfully/i)).toBeInTheDocument()\n    })\n    \n    expect(mockCreatePost).toHaveBeenCalled()\n  })\n  \n  it('should show error message on validation failure', async () => {\n    const user = userEvent.setup()\n    \n    mockCreatePost.mockResolvedValue({\n      success: false,\n      errors: {\n        title: ['Title is required'],\n        content: ['Content must be at least 10 characters']\n      }\n    })\n    \n    render(<PostForm />)\n    \n    // Submit empty form\n    await user.click(screen.getByRole('button', { name: /create post/i }))\n    \n    // Wait for error messages\n    await waitFor(() => {\n      expect(screen.getByText(/title is required/i)).toBeInTheDocument()\n      expect(screen.getByText(/content must be at least 10 characters/i)).toBeInTheDocument()\n    })\n  })\n})"
-    },
-    "error_handling_testing": {
-      "description": "測試錯誤處理和邊界情況",
-      "scenarios": {
-        "validation_errors": "測試輸入驗證錯誤",
-        "database_errors": "測試數據庫操作錯誤",
-        "network_errors": "測試網絡和外部服務錯誤",
-        "permission_errors": "測試權限和認證錯誤"
-      },
-      "example": "import { describe, it, expect, vi } from 'vitest'\nimport { updatePost } from './actions'\n\n// Mock database with error scenarios\nconst mockDb = {\n  post: {\n    findUnique: vi.fn(),\n    update: vi.fn()\n  },\n  session: {\n    findUnique: vi.fn()\n  }\n}\n\nvi.mock('./db', () => ({\n  default: mockDb\n}))\n\nvi.mock('next/headers', () => ({\n  cookies: () => ({\n    get: vi.fn(() => ({ value: 'mock-session-id' }))\n  })\n}))\n\ndescribe('updatePost Error Handling', () => {\n  it('should handle unauthorized access', async () => {\n    mockDb.session.findUnique.mockResolvedValue(null)\n    \n    const formData = new FormData()\n    formData.append('title', 'Updated Title')\n    formData.append('content', 'Updated Content')\n    \n    await expect(updatePost('post-1', formData)).rejects.toThrow('Unauthorized')\n  })\n  \n  it('should handle post not found', async () => {\n    mockDb.session.findUnique.mockResolvedValue({\n      user: { id: 'user-1', role: 'USER' }\n    })\n    mockDb.post.findUnique.mockResolvedValue(null)\n    \n    const formData = new FormData()\n    formData.append('title', 'Updated Title')\n    formData.append('content', 'Updated Content')\n    \n    await expect(updatePost('post-1', formData)).rejects.toThrow('Post not found')\n  })\n  \n  it('should handle insufficient permissions', async () => {\n    mockDb.session.findUnique.mockResolvedValue({\n      user: { id: 'user-2', role: 'USER' }\n    })\n    mockDb.post.findUnique.mockResolvedValue({\n      id: 'post-1',\n      author: { id: 'user-1' }\n    })\n    \n    const formData = new FormData()\n    formData.append('title', 'Updated Title')\n    formData.append('content', 'Updated Content')\n    \n    await expect(updatePost('post-1', formData)).rejects.toThrow('Insufficient permissions')\n  })\n  \n  it('should handle database errors', async () => {\n    mockDb.session.findUnique.mockResolvedValue({\n      user: { id: 'user-1', role: 'USER' }\n    })\n    mockDb.post.findUnique.mockResolvedValue({\n      id: 'post-1',\n      author: { id: 'user-1' }\n    })\n    mockDb.post.update.mockRejectedValue(new Error('Database connection failed'))\n    \n    const formData = new FormData()\n    formData.append('title', 'Updated Title')\n    formData.append('content', 'Updated Content')\n    \n    await expect(updatePost('post-1', formData)).rejects.toThrow('Database connection failed')\n  })\n})"
-    },
-    "debugging_techniques": {
-      "description": "調試 Server Actions 的技巧和工具",
-      "methods": {
-        "console_logging": "使用 console.log 進行調試",
-        "error_boundaries": "實現錯誤邊界捕獲錯誤",
-        "development_tools": "使用開發者工具進行調試",
-        "logging_frameworks": "使用專業的日誌框架"
-      },
-      "example": "'use server'\nexport async function debugAction(formData: FormData) {\n  try {\n    console.log('Debug: Starting action execution')\n    console.log('Debug: FormData contents:', Object.fromEntries(formData.entries()))\n    \n    // 記錄環境信息\n    console.log('Debug: Environment:', {\n      nodeEnv: process.env.NODE_ENV,\n      timestamp: new Date().toISOString()\n    })\n    \n    const result = await performAction(formData)\n    \n    console.log('Debug: Action completed successfully:', result)\n    return { success: true, result }\n    \n  } catch (error) {\n    console.error('Debug: Action failed with error:', {\n      message: error instanceof Error ? error.message : 'Unknown error',\n      stack: error instanceof Error ? error.stack : undefined,\n      timestamp: new Date().toISOString()\n    })\n    \n    // 重新拋出錯誤\n    throw error\n  }\n}"
-    },
-    "testing_utilities": {
-      "description": "測試 Server Actions 的實用工具和輔助函數",
-      "tools": {
-        "test_data_generators": "生成測試數據",
-        "mock_factories": "創建模擬對象",
-        "assertion_helpers": "自定義斷言函數",
-        "test_setup": "測試環境設置"
-      },
-      "example": "// Test utilities\n\nexport function createMockFormData(data: Record<string, any>): FormData {\n  const formData = new FormData()\n  \n  Object.entries(data).forEach(([key, value]) => {\n    if (Array.isArray(value)) {\n      value.forEach(item => formData.append(key, item))\n    } else {\n      formData.append(key, value)\n    }\n  })\n  \n  return formData\n}\n\nexport function createMockUser(overrides: Partial<User> = {}): User {\n  return {\n    id: 'user-1',\n    email: 'test@example.com',\n    name: 'Test User',\n    role: 'USER',\n    createdAt: new Date(),\n    ...overrides\n  }\n}\n\nexport function createMockPost(overrides: Partial<Post> = {}): Post {\n  return {\n    id: 'post-1',\n    title: 'Test Post',\n    content: 'Test Content',\n    authorId: 'user-1',\n    createdAt: new Date(),\n    ...overrides\n  }\n}\n\nexport async function expectValidationError(\n  action: Function,\n  formData: FormData,\n  expectedErrors: Record<string, string[]>\n) {\n  const result = await action(formData)\n  \n  expect(result.success).toBe(false)\n  expect(result.errors).toEqual(expectedErrors)\n}\n\nexport async function expectSuccessResult(\n  action: Function,\n  formData: FormData,\n  expectedData?: any\n) {\n  const result = await action(formData)\n  \n  expect(result.success).toBe(true)\n  if (expectedData) {\n    expect(result).toMatchObject(expectedData)\n  }\n}"
-    }
-  },
-  "best_practices": [
-    "為每個 Server Action 編寫單元測試",
-    "測試正常流程和錯誤情況",
-    "使用模擬對象隔離外部依賴",
-    "測試邊界情況和異常輸入",
-    "實現適當的錯誤處理和日誌記錄",
-    "使用類型安全的測試工具",
-    "定期運行測試套件",
-    "維護測試數據和測試環境"
-  ],
-  "testing_patterns": {
-    "arrange_act_assert": "安排、執行、斷言的測試模式",
-    "given_when_then": "給定、當、那麼的測試模式",
-    "test_doubles": "測試替身（模擬、存根、假對象）",
-    "property_based_testing": "基於屬性的測試",
-    "contract_testing": "契約測試"
+# Next.js Server Actions 測試與調試
+
+**版本:** Next.js 14+  
+**最後更新:** 2025-01-17  
+**分類:** Testing & Debugging  
+**複雜度:** Medium  
+
+## 概述
+
+測試和調試 Server Actions 的方法，包括單元測試、集成測試、錯誤處理和調試技巧。
+
+## 單元測試
+
+### 描述
+對 Server Actions 進行單元測試
+
+### 測試框架
+- **Jest**: 使用 Jest 進行測試
+- **Vitest**: 使用 Vitest 進行測試
+- **Testing Library**: 使用 React Testing Library 測試組件
+
+### 範例
+
+#### 基本測試
+```typescript
+import { describe, it, expect, vi } from 'vitest'
+import { createPost } from './actions'
+import { revalidatePath } from 'next/cache'
+
+// Mock Next.js functions
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn()
+}))
+
+vi.mock('next/headers', () => ({
+  cookies: () => ({
+    get: vi.fn(() => ({ value: 'mock-session-id' }))
+  })
+}))
+
+// Mock database
+const mockDb = {
+  post: {
+    create: vi.fn()
   }
 }
+
+vi.mock('./db', () => ({
+  default: mockDb
+}))
+
+describe('createPost', () => {
+  it('should create a post successfully', async () => {
+    const mockPost = {
+      id: '1',
+      title: 'Test Post',
+      content: 'Test Content',
+      authorId: 'user-1'
+    }
+    
+    mockDb.post.create.mockResolvedValue(mockPost)
+    
+    const formData = new FormData()
+    formData.append('title', 'Test Post')
+    formData.append('content', 'Test Content')
+    
+    const result = await createPost(formData)
+    
+    expect(result).toEqual({
+      success: true,
+      post: mockPost
+    })
+    expect(mockDb.post.create).toHaveBeenCalledWith({
+      data: {
+        title: 'Test Post',
+        content: 'Test Content',
+        authorId: 'user-1'
+      }
+    })
+    expect(revalidatePath).toHaveBeenCalledWith('/posts')
+  })
+  
+  it('should return error for missing title', async () => {
+    const formData = new FormData()
+    formData.append('content', 'Test Content')
+    
+    const result = await createPost(formData)
+    
+    expect(result).toEqual({
+      success: false,
+      error: 'Title is required'
+    })
+    expect(mockDb.post.create).not.toHaveBeenCalled()
+  })
+})
+```
+
+#### 模擬外部服務
+```typescript
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { sendEmail } from './actions'
+
+// Mock external email service
+const mockEmailService = {
+  send: vi.fn()
+}
+
+vi.mock('./email-service', () => ({
+  default: mockEmailService
+}))
+
+beforeEach(() => {
+  vi.clearAllMocks()
+})
+
+describe('sendEmail', () => {
+  it('should send email successfully', async () => {
+    mockEmailService.send.mockResolvedValue({ messageId: 'msg-123' })
+    
+    const formData = new FormData()
+    formData.append('to', 'test@example.com')
+    formData.append('subject', 'Test Subject')
+    formData.append('body', 'Test Body')
+    
+    const result = await sendEmail(formData)
+    
+    expect(result).toEqual({
+      success: true,
+      messageId: 'msg-123'
+    })
+    expect(mockEmailService.send).toHaveBeenCalledWith({
+      to: 'test@example.com',
+      subject: 'Test Subject',
+      body: 'Test Body'
+    })
+  })
+  
+  it('should handle email service errors', async () => {
+    mockEmailService.send.mockRejectedValue(new Error('Email service unavailable'))
+    
+    const formData = new FormData()
+    formData.append('to', 'test@example.com')
+    formData.append('subject', 'Test Subject')
+    formData.append('body', 'Test Body')
+    
+    const result = await sendEmail(formData)
+    
+    expect(result).toEqual({
+      success: false,
+      error: 'Email service unavailable'
+    })
+  })
+})
+```
+
+## 集成測試
+
+### 描述
+測試 Server Actions 與其他組件的集成
+
+### 測試方式
+- **組件測試**: 測試使用 Server Actions 的組件
+- **API 測試**: 測試 Server Actions 的 API 行為
+- **端到端**: 端到端測試完整流程
+
+### 範例
+```typescript
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { PostForm } from './PostForm'
+import { createPost } from './actions'
+
+// Mock the Server Action
+vi.mock('./actions', () => ({
+  createPost: vi.fn()
+}))
+
+const mockCreatePost = createPost as vi.MockedFunction<typeof createPost>
+
+describe('PostForm Integration', () => {
+  it('should submit form and show success message', async () => {
+    const user = userEvent.setup()
+    
+    mockCreatePost.mockResolvedValue({
+      success: true,
+      post: { id: '1', title: 'Test Post', content: 'Test Content' }
+    })
+    
+    render(<PostForm />)
+    
+    // Fill form
+    await user.type(screen.getByLabelText(/title/i), 'Test Post')
+    await user.type(screen.getByLabelText(/content/i), 'Test Content')
+    
+    // Submit form
+    await user.click(screen.getByRole('button', { name: /create post/i }))
+    
+    // Wait for success message
+    await waitFor(() => {
+      expect(screen.getByText(/post created successfully/i)).toBeInTheDocument()
+    })
+    
+    expect(mockCreatePost).toHaveBeenCalled()
+  })
+  
+  it('should show error message on validation failure', async () => {
+    const user = userEvent.setup()
+    
+    mockCreatePost.mockResolvedValue({
+      success: false,
+      errors: {
+        title: ['Title is required'],
+        content: ['Content must be at least 10 characters']
+      }
+    })
+    
+    render(<PostForm />)
+    
+    // Submit empty form
+    await user.click(screen.getByRole('button', { name: /create post/i }))
+    
+    // Wait for error messages
+    await waitFor(() => {
+      expect(screen.getByText(/title is required/i)).toBeInTheDocument()
+      expect(screen.getByText(/content must be at least 10 characters/i)).toBeInTheDocument()
+    })
+  })
+})
+```
+
+## 錯誤處理測試
+
+### 描述
+測試錯誤處理和邊界情況
+
+### 測試場景
+- **驗證錯誤**: 測試輸入驗證錯誤
+- **數據庫錯誤**: 測試數據庫操作錯誤
+- **網絡錯誤**: 測試網絡和外部服務錯誤
+- **權限錯誤**: 測試權限和認證錯誤
+
+### 範例
+```typescript
+import { describe, it, expect, vi } from 'vitest'
+import { updatePost } from './actions'
+
+// Mock database with error scenarios
+const mockDb = {
+  post: {
+    findUnique: vi.fn(),
+    update: vi.fn()
+  },
+  session: {
+    findUnique: vi.fn()
+  }
+}
+
+vi.mock('./db', () => ({
+  default: mockDb
+}))
+
+vi.mock('next/headers', () => ({
+  cookies: () => ({
+    get: vi.fn(() => ({ value: 'mock-session-id' }))
+  })
+}))
+
+describe('updatePost Error Handling', () => {
+  it('should handle unauthorized access', async () => {
+    mockDb.session.findUnique.mockResolvedValue(null)
+    
+    const formData = new FormData()
+    formData.append('title', 'Updated Title')
+    formData.append('content', 'Updated Content')
+    
+    await expect(updatePost('post-1', formData)).rejects.toThrow('Unauthorized')
+  })
+  
+  it('should handle post not found', async () => {
+    mockDb.session.findUnique.mockResolvedValue({
+      user: { id: 'user-1', role: 'USER' }
+    })
+    mockDb.post.findUnique.mockResolvedValue(null)
+    
+    const formData = new FormData()
+    formData.append('title', 'Updated Title')
+    formData.append('content', 'Updated Content')
+    
+    await expect(updatePost('post-1', formData)).rejects.toThrow('Post not found')
+  })
+  
+  it('should handle insufficient permissions', async () => {
+    mockDb.session.findUnique.mockResolvedValue({
+      user: { id: 'user-2', role: 'USER' }
+    })
+    mockDb.post.findUnique.mockResolvedValue({
+      id: 'post-1',
+      author: { id: 'user-1' }
+    })
+    
+    const formData = new FormData()
+    formData.append('title', 'Updated Title')
+    formData.append('content', 'Updated Content')
+    
+    await expect(updatePost('post-1', formData)).rejects.toThrow('Insufficient permissions')
+  })
+  
+  it('should handle database errors', async () => {
+    mockDb.session.findUnique.mockResolvedValue({
+      user: { id: 'user-1', role: 'USER' }
+    })
+    mockDb.post.findUnique.mockResolvedValue({
+      id: 'post-1',
+      author: { id: 'user-1' }
+    })
+    mockDb.post.update.mockRejectedValue(new Error('Database connection failed'))
+    
+    const formData = new FormData()
+    formData.append('title', 'Updated Title')
+    formData.append('content', 'Updated Content')
+    
+    await expect(updatePost('post-1', formData)).rejects.toThrow('Database connection failed')
+  })
+})
+```
+
+## 調試技巧
+
+### 描述
+調試 Server Actions 的技巧和工具
+
+### 調試方法
+- **console.log**: 使用 console.log 進行調試
+- **錯誤邊界**: 實現錯誤邊界捕獲錯誤
+- **開發者工具**: 使用開發者工具進行調試
+- **日誌框架**: 使用專業的日誌框架
+
+### 範例
+```typescript
+'use server'
+export async function debugAction(formData: FormData) {
+  try {
+    console.log('Debug: Starting action execution')
+    console.log('Debug: FormData contents:', Object.fromEntries(formData.entries()))
+    
+    // 記錄環境信息
+    console.log('Debug: Environment:', {
+      nodeEnv: process.env.NODE_ENV,
+      timestamp: new Date().toISOString()
+    })
+    
+    const result = await performAction(formData)
+    
+    console.log('Debug: Action completed successfully:', result)
+    return { success: true, result }
+    
+  } catch (error) {
+    console.error('Debug: Action failed with error:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      timestamp: new Date().toISOString()
+    })
+    
+    // 重新拋出錯誤
+    throw error
+  }
+}
+```
+
+## 測試工具
+
+### 描述
+測試 Server Actions 的實用工具和輔助函數
+
+### 工具類型
+- **測試數據生成器**: 生成測試數據
+- **模擬工廠**: 創建模擬對象
+- **斷言輔助**: 自定義斷言函數
+- **測試設置**: 測試環境設置
+
+### 範例
+```typescript
+// Test utilities
+
+export function createMockFormData(data: Record<string, any>): FormData {
+  const formData = new FormData()
+  
+  Object.entries(data).forEach(([key, value]) => {
+    if (Array.isArray(value)) {
+      value.forEach(item => formData.append(key, item))
+    } else {
+      formData.append(key, value)
+    }
+  })
+  
+  return formData
+}
+
+export function createMockUser(overrides: Partial<User> = {}): User {
+  return {
+    id: 'user-1',
+    email: 'test@example.com',
+    name: 'Test User',
+    role: 'USER',
+    createdAt: new Date(),
+    ...overrides
+  }
+}
+
+export function createMockPost(overrides: Partial<Post> = {}): Post {
+  return {
+    id: 'post-1',
+    title: 'Test Post',
+    content: 'Test Content',
+    authorId: 'user-1',
+    createdAt: new Date(),
+    ...overrides
+  }
+}
+
+export async function expectValidationError(
+  action: Function,
+  formData: FormData,
+  expectedErrors: Record<string, string[]>
+) {
+  const result = await action(formData)
+  
+  expect(result.success).toBe(false)
+  expect(result.errors).toEqual(expectedErrors)
+}
+
+export async function expectSuccessResult(
+  action: Function,
+  formData: FormData,
+  expectedData?: any
+) {
+  const result = await action(formData)
+  
+  expect(result.success).toBe(true)
+  if (expectedData) {
+    expect(result).toMatchObject(expectedData)
+  }
+}
+```
+
+## 最佳實踐
+
+1. 為每個 Server Action 編寫單元測試
+2. 測試正常流程和錯誤情況
+3. 使用模擬對象隔離外部依賴
+4. 測試邊界情況和異常輸入
+5. 實現適當的錯誤處理和日誌記錄
+6. 使用類型安全的測試工具
+7. 定期運行測試套件
+8. 維護測試數據和測試環境
+
+## 測試模式
+
+### Arrange-Act-Assert
+安排、執行、斷言的測試模式
+
+### Given-When-Then
+給定、當、那麼的測試模式
+
+### Test Doubles
+測試替身（模擬、存根、假對象）
+
+### Property-Based Testing
+基於屬性的測試
+
+### Contract Testing
+契約測試
