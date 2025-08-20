@@ -40,12 +40,12 @@ src/
 │   │   ├── @analytics/           # 分析儀表板平行路由
 │   │   ├── layout.tsx            # 統一佈局
 │   │   └── page.tsx              # 儀表板首頁
-│   ├── api/                      # Route Handlers (取代 API Routes)
-│   │   ├── projects/
-│   │   ├── contracts/
-│   │   ├── partners/
-│   │   ├── documents/
-│   │   └── ai/
+│   ├── actions/                  # Server Actions (Next.js 15 標準)
+│   │   ├── projects-actions.ts
+│   │   ├── contracts-actions.ts
+│   │   ├── partners-actions.ts
+│   │   ├── documents-actions.ts
+│   │   └── ai-actions.ts
 │   ├── globals.css
 │   ├── layout.tsx                # 根佈局
 │   └── page.tsx                  # 首頁

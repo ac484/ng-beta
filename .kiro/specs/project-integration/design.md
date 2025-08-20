@@ -496,7 +496,8 @@ interface AppState {
   // UI 狀態
   ui: UIState
   // 模組狀態
-  portfolio: PortfolioState
+  projects: ProjectsState
+  contracts: ContractsState
   partners: PartnersState
   documents: DocumentsState
   analytics: AnalyticsState
@@ -676,7 +677,7 @@ export async function deleteProject(projectId: string) {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '@clerk/nextjs'
 import { projectService } from '@/lib/services/project-service'
-import { createProject, updateProject, deleteProject } from '@/lib/actions/portfolio-actions'
+import { createProject, updateProject, deleteProject } from '@/lib/actions/projects-actions'
 
 export function useProjects() {
   const { userId } = useAuth()
@@ -861,7 +862,7 @@ export class FirebaseService {
 
 // lib/services/project-service.ts
 import { FirebaseService } from './firebase-service'
-import { Project, CreateProjectData } from '@/types/portfolio.types'
+import { Project, CreateProjectData } from '@/types/projects.types'
 
 export class ProjectService extends FirebaseService {
   private collectionName = 'projects'
@@ -934,8 +935,12 @@ graph TD
 ```typescript
 // 動態載入策略
 const ModuleComponents = {
-  Portfolio: dynamic(() => import('@/features/portfolio'), {
-    loading: () => <ModuleSkeleton name="Portfolio" />,
+  Projects: dynamic(() => import('@/features/projects'), {
+    loading: () => <ModuleSkeleton name="Projects" />,
+    ssr: false
+  }),
+  Contracts: dynamic(() => import('@/features/contracts'), {
+    loading: () => <ModuleSkeleton name="Contracts" />,
     ssr: false
   }),
   Partners: dynamic(() => import('@/features/partners'), {

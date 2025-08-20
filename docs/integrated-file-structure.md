@@ -70,28 +70,33 @@ src/
 │   │   └── sign-up/
 │   │       └── page.tsx
 │   ├── (dashboard)/              # 主要應用路由群組
-│   │   ├── @portfolio/           # Portfolio 平行路由
+│   │   ├── @projects/            # 專案管理平行路由
+│   │   ├── @projects/            # 專案管理平行路由
 │   │   │   ├── default.tsx
 │   │   │   ├── loading.tsx
 │   │   │   ├── error.tsx
-│   │   │   ├── projects/
-│   │   │   │   ├── page.tsx
-│   │   │   │   ├── [id]/
-│   │   │   │   │   ├── page.tsx
-│   │   │   │   │   └── edit/
-│   │   │   │   │       └── page.tsx
-│   │   │   │   └── new/
-│   │   │   │       └── page.tsx
-│   │   │   ├── tasks/
-│   │   │   │   ├── page.tsx
-│   │   │   │   └── [id]/
-│   │   │   │       └── page.tsx
-│   │   │   ├── contracts/
-│   │   │   │   ├── page.tsx
-│   │   │   │   └── [id]/
-│   │   │   │       └── page.tsx
-│   │   │   └── analytics/
-│   │   │       └── page.tsx
+│   │   │   ├── page.tsx          # 專案總覽
+│   │   │   ├── [id]/
+│   │   │   │   ├── page.tsx      # 專案詳情
+│   │   │   │   ├── edit/
+│   │   │   │   │   └── page.tsx  # 編輯專案
+│   │   │   │   └── tasks/
+│   │   │   │       ├── page.tsx  # 專案任務
+│   │   │   │       └── [taskId]/
+│   │   │   │           └── page.tsx # 任務詳情
+│   │   │   └── new/
+│   │   │       └── page.tsx      # 新建專案
+│   │   ├── @contracts/           # 合約管理平行路由
+│   │   │   ├── default.tsx
+│   │   │   ├── loading.tsx
+│   │   │   ├── error.tsx
+│   │   │   ├── page.tsx          # 合約列表
+│   │   │   ├── [id]/
+│   │   │   │   ├── page.tsx      # 合約詳情
+│   │   │   │   └── edit/
+│   │   │   │       └── page.tsx  # 編輯合約
+│   │   │   └── new/
+│   │   │       └── page.tsx      # 新建合約
 │   │   ├── @partners/            # PartnerVerse 平行路由
 │   │   │   ├── default.tsx
 │   │   │   ├── loading.tsx
@@ -146,7 +151,8 @@ src/
 │   │   └── error.tsx             # 錯誤處理
 │   ├── actions/                  # Server Actions
 │   │   ├── auth-actions.ts
-│   │   ├── portfolio-actions.ts
+│   │   ├── projects-actions.ts
+│   │   ├── contracts-actions.ts
 │   │   ├── partners-actions.ts
 │   │   ├── documents-actions.ts
 │   │   └── analytics-actions.ts
@@ -227,15 +233,20 @@ src/
 │   │   └── ThemeToggle/
 │   │       ├── index.tsx
 │   │       └── theme-toggle.tsx
-│   ├── portfolio/                # Portfolio 專用元件
+│   ├── projects/                 # 專案管理專用元件
 │   │   ├── project-card.tsx
 │   │   ├── project-form.tsx
 │   │   ├── task-list.tsx
 │   │   ├── task-item.tsx
 │   │   ├── progress-chart.tsx
-│   │   ├── contract-table.tsx
 │   │   ├── ai-subtask-suggestions.tsx
 │   │   └── create-project-dialog.tsx
+│   ├── contracts/                # 合約管理專用元件
+│   │   ├── contract-card.tsx
+│   │   ├── contract-form.tsx
+│   │   ├── contract-table.tsx
+│   │   ├── ai-contract-summary.tsx
+│   │   └── contract-status-tracker.tsx
 │   ├── partners/                 # PartnerVerse 專用元件
 │   │   ├── partner-card.tsx
 │   │   ├── partner-form.tsx
@@ -296,7 +307,7 @@ src/
 │   │   │   └── auth-service.ts
 │   │   └── types/
 │   │       └── auth.types.ts
-│   ├── portfolio/                # Portfolio 功能模組
+│   ├── projects/                 # 專案管理功能模組
 │   │   ├── components/
 │   │   │   ├── project-management/
 │   │   │   │   ├── project-list.tsx
@@ -306,26 +317,30 @@ src/
 │   │   │   │   ├── task-board.tsx
 │   │   │   │   ├── task-detail.tsx
 │   │   │   │   └── task-form.tsx
-│   │   │   ├── contract-management/
-│   │   │   │   ├── contract-list.tsx
-│   │   │   │   ├── contract-detail.tsx
-│   │   │   │   └── ai-summarizer.tsx
 │   │   │   └── analytics/
 │   │   │       ├── progress-charts.tsx
 │   │   │       └── performance-metrics.tsx
 │   │   ├── hooks/
 │   │   │   ├── use-projects.ts
 │   │   │   ├── use-tasks.ts
-│   │   │   ├── use-contracts.ts
-│   │   │   └── use-portfolio-analytics.ts
+│   │   │   └── use-project-analytics.ts
 │   │   ├── services/
 │   │   │   ├── project-service.ts
 │   │   │   ├── task-service.ts
-│   │   │   ├── contract-service.ts
 │   │   │   └── ai-service.ts
 │   │   └── types/
 │   │       ├── project.types.ts
-│   │       ├── task.types.ts
+│   │       └── task.types.ts
+│   ├── contracts/                # 合約管理功能模組
+│   │   ├── components/
+│   │   │   ├── contract-list.tsx
+│   │   │   ├── contract-detail.tsx
+│   │   │   └── ai-summarizer.tsx
+│   │   ├── hooks/
+│   │   │   └── use-contracts.ts
+│   │   ├── services/
+│   │   │   └── contract-service.ts
+│   │   └── types/
 │   │       └── contract.types.ts
 │   ├── partners/                 # PartnerVerse 功能模組
 │   │   ├── components/
@@ -453,7 +468,8 @@ src/
 │   │   │   └── document-analysis.ts
 │   │   ├── services/
 │   │   │   ├── unified-ai-service.ts
-│   │   │   ├── portfolio-ai.ts
+│   │   │   ├── projects-ai.ts
+│   │   │   ├── contracts-ai.ts
 │   │   │   ├── partner-ai.ts
 │   │   │   └── document-ai.ts
 │   │   └── types/
@@ -473,13 +489,15 @@ src/
 │   │   ├── document-service.ts
 │   │   └── analytics-service.ts
 │   ├── queries/
-│   │   ├── portfolio-queries.ts
+│   │   ├── projects-queries.ts
+│   │   ├── contracts-queries.ts
 │   │   ├── partners-queries.ts
 │   │   ├── documents-queries.ts
 │   │   └── analytics-queries.ts
 │   ├── validations/
 │   │   ├── auth.schemas.ts
-│   │   ├── portfolio.schemas.ts
+│   │   ├── projects.schemas.ts
+│   │   ├── contracts.schemas.ts
 │   │   ├── partner.schemas.ts
 │   │   ├── document.schemas.ts
 │   │   └── common.schemas.ts
@@ -492,7 +510,8 @@ src/
 │   └── constants.ts
 ├── store/                        # 狀態管理
 │   ├── auth-store.ts
-│   ├── portfolio-store.ts
+│   ├── projects-store.ts
+│   ├── contracts-store.ts
 │   ├── partner-store.ts
 │   ├── document-store.ts
 │   ├── analytics-store.ts
@@ -500,7 +519,8 @@ src/
 │   └── index.ts
 ├── types/                        # 全域類型定義
 │   ├── auth.types.ts
-│   ├── portfolio.types.ts
+│   ├── projects.types.ts
+│   ├── contracts.types.ts
 │   ├── partner.types.ts
 │   ├── document.types.ts
 │   ├── analytics.types.ts
@@ -515,7 +535,8 @@ src/
 │   └── data-table.ts
 ├── constants/                    # 常數定義
 │   ├── auth.constants.ts
-│   ├── portfolio.constants.ts
+│   ├── projects.constants.ts
+│   ├── contracts.constants.ts
 │   ├── partner.constants.ts
 │   ├── document.constants.ts
 │   ├── ui.constants.ts
