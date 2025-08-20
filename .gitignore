@@ -76,5 +76,6 @@ pids
 CLAUDE.md
 
 .env
+.env.example
 
 .next

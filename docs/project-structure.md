@@ -1,6 +1,6 @@
 # Project Structure
 
-> **Auto-generated on:** 2025-08-20T14:16:24.256Z  
+> **Auto-generated on:** 2025-08-20T14:18:55.416Z  
 > **Purpose:** AI code generation reference - shows relevant project structure for development
 
 ## Directory Tree
@@ -299,7 +299,8 @@
 ├── postcss.config.js
 ├── README.md
 ├── RELEASE_NOTES.md
-└── tsconfig.json
+├── tsconfig.json
+└── tsconfig.tsbuildinfo
 
 ```
 

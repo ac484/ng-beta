@@ -71,7 +71,6 @@ src/
 │   │       └── page.tsx
 │   ├── (dashboard)/              # 主要應用路由群組
 │   │   ├── @projects/            # 專案管理平行路由
-│   │   ├── @projects/            # 專案管理平行路由
 │   │   │   ├── default.tsx
 │   │   │   ├── loading.tsx
 │   │   │   ├── error.tsx
