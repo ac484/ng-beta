@@ -1,6 +1,6 @@
 # Project Structure
 
-> **Auto-generated on:** 2025-08-20T10:01:37.675Z  
+> **Auto-generated on:** 2025-08-20T10:08:13.189Z  
 > **Purpose:** AI code generation reference - shows relevant project structure for development
 
 ## Directory Tree
@@ -45,8 +45,18 @@
 │   │   │   └── supabase-service.ts
 │   │   ├── ai/
 │   │   │   ├── services/
+│   │   │   │   ├── contracts-ai.ts
+│   │   │   │   ├── document-ai.ts
+│   │   │   │   ├── partner-ai.ts
+│   │   │   │   ├── projects-ai.ts
+│   │   │   │   └── unified-ai-service.ts
 │   │   │   ├── types/
+│   │   │   │   └── ai.types.ts
 │   │   │   ├── flows/
+│   │   │   │   ├── document-analysis.ts
+│   │   │   │   ├── generate-subtasks-flow.ts
+│   │   │   │   ├── partner-suggestions.ts
+│   │   │   │   └── summarize-contract.ts
 │   │   │   └── genkit.ts
 │   │   ├── auth/
 │   │   │   ├── clerk.ts
@@ -108,6 +118,9 @@
 │   │   ├── react-suspense-integration.json
 │   │   ├── README.md
 │   │   └── troubleshooting-and-debugging.json
+│   ├── scripts/
+│   │   ├── auto-structure-generation.md
+│   │   └── commit-structure-solution.md
 │   ├── Server Actions/
 │   │   ├── 01-basics.json
 │   │   ├── 02-advanced-patterns.json
@@ -121,9 +134,7 @@
 │   │   ├── 10-index.json
 │   │   └── README.md
 │   ├── architecture-update-summary.md
-│   ├── auto-structure-generation.md
 │   ├── bank.md
-│   ├── commit-structure-solution.md
 │   ├── integrated-file-structure.md
 │   ├── integration-summary.md
 │   ├── modern-architecture-guide.md
@@ -145,6 +156,25 @@
 │   ├── server-actions-patterns.md
 │   ├── tanstack-query-integration-patterns.md
 │   └── testing-strategies.md
+├── run/
+│   └── _/
+│       ├── .gitignore
+│       ├── applypatch-msg
+│       ├── commit-msg
+│       ├── h
+│       ├── husky.sh
+│       ├── post-applypatch
+│       ├── post-checkout
+│       ├── post-commit
+│       ├── post-merge
+│       ├── post-rewrite
+│       ├── pre-applypatch
+│       ├── pre-auto-gc
+│       ├── pre-commit
+│       ├── pre-merge-commit
+│       ├── pre-push
+│       ├── pre-rebase
+│       └── prepare-commit-msg
 ├── scripts/
 │   └── generate-project-structure.js
 ├── .env
