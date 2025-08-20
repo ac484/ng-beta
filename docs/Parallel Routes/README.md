@@ -11,13 +11,13 @@
 | 文檔 | 路徑 | 描述 | 複雜度 |
 |------|------|------|--------|
 | **文檔索引** | `parallel-routes-index.json` | 完整的文檔導航和概述 | 所有級別 |
-| **核心概念** | `core-concepts/parallel-routes-core-concepts.json` | 基本概念、語法和架構 | 初學者 |
-| **實例與範例** | `examples/parallel-routes-examples.json` | 實用代碼示例和常見場景 | 中級 |
-| **進階模式** | `advanced-patterns/parallel-routes-advanced-patterns.json` | 複雜場景和進階使用模式 | 高級 |
-| **實作指南** | `implementation-guides/parallel-routes-implementation-guide.json` | 完整的實作指南和最佳實踐 | 中級 |
-| **最佳實踐** | `best-practices/parallel-routes-best-practices.json` | 開發最佳實踐和設計原則 | 中級 |
-| **故障排除** | `troubleshooting/parallel-routes-troubleshooting.json` | 常見問題和解決方案 | 中級 |
-| **API 參考** | `api-reference/parallel-routes-api-reference.json` | 完整的 API 參考文檔 | 高級 |
+| **核心概念** | `parallel-routes-core-concepts.json` | 基本概念、語法和架構 | 初學者 |
+| **實例與範例** | `parallel-routes-examples.json` | 實用代碼示例和常見場景 | 中級 |
+| **進階模式** | `parallel-routes-advanced-patterns.json` | 複雜場景和進階使用模式 | 高級 |
+| **實作指南** | `parallel-routes-implementation-guide.json` | 完整的實作指南和最佳實踐 | 中級 |
+| **最佳實踐** | `parallel-routes-best-practices.json` | 開發最佳實踐和設計原則 | 中級 |
+| **故障排除** | `parallel-routes-troubleshooting.json` | 常見問題和解決方案 | 中級 |
+| **API 參考** | `parallel-routes-api-reference.json` | 完整的 API 參考文檔 | 高級 |
 
 ## 🎯 學習路徑
 
