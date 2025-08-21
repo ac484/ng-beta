@@ -1,35 +1,31 @@
-import { Providers } from '@/components/layout/providers';
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
-
-const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin']
-});
-
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin']
-});
+import { Toaster } from '@/components/ui/toaster';
+import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
-  title: 'NG Beta - Integrated Platform',
-  description:
-    'Modern integrated platform for projects, contracts, partners, and documents'
+  title: 'Constructo',
+  description: 'Construction project management app',
 };
 
 export default function RootLayout({
-  children
+  children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='en'>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Providers>{children}</Providers>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        ></link>
+      </head>
+      <body className={cn('font-body antialiased')}>
+        {children}
+        <Toaster />
       </body>
     </html>
   );

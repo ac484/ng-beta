@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
-    "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -13,33 +12,16 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"],
-      "@app/*": ["./src/app/*"],
-      "@components/*": ["./src/components/*"],
-      "@config/*": ["./src/config/*"],
-      "@constants/*": ["./src/constants/*"],
-      "@features/*": ["./src/features/*"],
-      "@hooks/*": ["./src/hooks/*"],
-      "@lib/*": ["./src/lib/*"],
-      "@types/*": ["./src/types/*"],
-      "~/*": ["./public/*"]
-    },
     "incremental": true,
     "plugins": [
       {
         "name": "next"
       }
-    ]
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": [
-    "node_modules",
-    "DocuParse/**/*",
-    "PartnerVerse/**/*",
-    "Portfolio/**/*",
-    "next-shadcn-dashboard-starter-main/**/*"
-  ],
-
+  "exclude": ["node_modules"]
 }
